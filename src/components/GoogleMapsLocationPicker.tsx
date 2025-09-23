@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import Button from "./Button";
 import { MapPin } from "lucide-react";
 
