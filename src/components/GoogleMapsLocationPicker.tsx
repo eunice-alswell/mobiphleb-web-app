@@ -114,6 +114,7 @@ export default function GoogleMapsLocationPicker({
           autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
             fields: ["formatted_address", "geometry"],
             types: ["geocode"],
+            componentRestrictions: { country: "GH" },
           });
 
           autocompleteRef.current.addListener("place_changed", () => {
@@ -206,6 +207,7 @@ export default function GoogleMapsLocationPicker({
           defaultValue={initialValue}
           placeholder="Enter your address or search location"
           required={required}
+          className="input-field"
         />
       </div>
 
