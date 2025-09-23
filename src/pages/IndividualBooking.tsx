@@ -10,7 +10,7 @@ import {
   CalendarDays, 
   Clock, 
   MapPin,
-  // Phone, 
+  // Phone,
   User, 
   // Mail, 
   CheckCircle 
@@ -18,8 +18,10 @@ import {
 import { motion } from "framer-motion";
 import type { IndividualBookingFormData, Gender } from "@/utils/FormTypes";
 import Button from "@/components/Button";
+import { DatePickerInput } from "@/components/DatePicker";
+// import { Link } from "react-router-dom"; 
 
-export default function IndividualBookingPage() {
+export default function IndividualBooking() {
   const [formData, setFormData] = useState<IndividualBookingFormData>({
     name: "",
     age: "",
@@ -38,6 +40,7 @@ export default function IndividualBookingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [hasPatientNo, setHasPatientNo] = useState(false);
 
   const handleInputChange = (
       field: keyof IndividualBookingFormData, 
@@ -93,16 +96,24 @@ export default function IndividualBookingPage() {
     });
   };
 
-  const timeSlots = [
-    "8:00 AM - 9:00 AM",
-    "9:00 AM - 10:00 AM", 
-    "10:00 AM - 11:00 AM",
-    "11:00 AM - 12:00 PM",
-    "1:00 PM - 2:00 PM",
-    "2:00 PM - 3:00 PM",
-    "3:00 PM - 4:00 PM",
-    "4:00 PM - 5:00 PM"
-  ];
+  // const timeSlots = [
+  //   "8:00 AM - 9:00 AM",
+  //   "9:00 AM - 10:00 AM", 
+  //   "10:00 AM - 11:00 AM",
+  //   "11:00 AM - 12:00 PM",
+  //   "1:00 PM - 2:00 PM",
+  //   "2:00 PM - 3:00 PM",
+  //   "3:00 PM - 4:00 PM",
+  //   "4:00 PM - 5:00 PM"
+  // ];
+
+  // Example facilities list — replace with API-driven list when onboarding facilities
+  const [facilities] = useState<string[]>([
+    "Quest Diagnostics",
+    "LabCorp",
+    "Accra Central Lab",
+    "MobiPhleb Partner Lab"
+  ]);
 
   const serviceTypes = [
     { value: "routine_blood_work", label: "Routine Blood Work" },
@@ -182,7 +193,7 @@ export default function IndividualBookingPage() {
                 </Alert>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-10">
                 {/* Personal Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -272,13 +283,15 @@ export default function IndividualBookingPage() {
                 {/* Appointment Timing */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
+                    <div className="w-10 h-10 p-2 bg-[#ddd6fe] rounded-full flex items-center justify-center">
+                      <Clock className="icon" />
+                    </div>
                     Preferred Schedule
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="appointmentDate">Preferred Date *</Label>
+                    {/* <div>
+                      <Label htmlFor="appointmentDate" className="label">Preferred Date <span className="text-red-500">*</span></Label>
                       <Input
                         id="appointmentDate"
                         type="date"
@@ -286,21 +299,35 @@ export default function IndividualBookingPage() {
                         onChange={(e) => handleInputChange('appointmentDate', e.target.value)}
                         min={new Date().toISOString().split('T')[0]}
                         required
-                        className="mt-1"
+                        className="mt-1 input-field"
+                        <CalendarDays />
                       />
-                    </div>
+                    </div> */}
                     <div>
-                      <Label htmlFor="appointmentTime">Preferred Time *</Label>
-                      <Select value={formData.appointmentTime} onValueChange={(value) => handleInputChange('appointmentTime', value)}>
-                        <SelectTrigger className="mt-1">
+                      <Label htmlFor="appointmentDate" className="label">Preferred Date <span className="text-red-500">*</span></Label>
+                      <DatePickerInput />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="appointmentTime" className="label">Preferred Time <span className="text-red-500">*</span></Label>
+                      {/* <Select value={formData.appointmentTime} onValueChange={(value) => handleInputChange('appointmentTime', value)}>
+                        <SelectTrigger className="mt-1 input-field w-full">
                           <SelectValue placeholder="Select time slot" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white text-gray-900 border-none">
                           {timeSlots.map((slot) => (
                             <SelectItem key={slot} value={slot}>{slot}</SelectItem>
                           ))}
                         </SelectContent>
-                      </Select>
+                      </Select> */}
+                      <Input
+                        id="appointmentTime"
+                        type="time"
+                        value={formData.appointmentTime}
+                        onChange={(e) => handleInputChange('appointmentTime', e.target.value)}
+                        required
+                        className="mt-1 w-full input-field"
+                      />
                     </div>
                   </div>
                 </div>
@@ -311,23 +338,25 @@ export default function IndividualBookingPage() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="LabFacility">Lab Facility *</Label>
-                      <Input
-                        id="LabFacility"
-                        value={formData.LabFacility}
-                        onChange={(e) => handleInputChange('LabFacility', e.target.value)}
-                        placeholder="e.g., Quest Diagnostics, LabCorp"
-                        required
-                        className="mt-1"
-                      />
+                      <Label htmlFor="LabFacility" className="label">Lab Facility <span className="text-red-500">*</span></Label>
+                      <Select value={formData.LabFacility} onValueChange={(value) => handleInputChange('LabFacility', value)}>
+                        <SelectTrigger className="mt-1 input-field w-full">
+                          <SelectValue placeholder="Select a lab facility" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white text-gray-900 border-none">
+                          {facilities.map((f) => (
+                            <SelectItem key={f} value={f}>{f}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
-                      <Label htmlFor="LabType">Lab Type</Label>
+                      <Label htmlFor="LabType" className="label">Lab Type</Label>
                       <Select value={formData.LabType || ""} onValueChange={(value) => handleInputChange('LabType', value)}>
-                        <SelectTrigger className="mt-1">
+                        <SelectTrigger className="mt-1 input-field w-full">
                           <SelectValue placeholder="Select lab type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white text-gray-900 border-none">
                           {serviceTypes.map((service) => (
                             <SelectItem key={service.value} value={service.value}>
                               {service.label}
@@ -337,16 +366,50 @@ export default function IndividualBookingPage() {
                       </Select>
                     </div>
                   </div>
+                  {/* Patient Number Section */}
+                  {/* Show patient number input only if user selects "Yes" */}
+                  <div className="patient-number-section">
+                    <Label className="label">Are you a patient at the selected facility?</Label>
+                    <div className="flex items-center gap-4 mb-3">
+                      <Label className="inline-flex items-center text-gray-700">
+                        <input
+                          id="hasPatientNoYes"
+                          type="radio"
+                          name="hasPatientNo"
+                          className="mr-2"
+                          checked={hasPatientNo}
+                          onChange={() => setHasPatientNo(true)}
+                        />
+                        <span>Yes</span>
+                      </Label>
+                      <Label className="inline-flex items-center text-gray-700">
+                        <input
+                          id="hasPatientNoNo"
+                          type="radio"
+                          name="hasPatientNo"
+                          className="mr-2"
+                          checked={!hasPatientNo}
+                          onChange={() => {
+                            setHasPatientNo(false);
+                            handleInputChange('patientNo', '');
+                          }}
+                        />
+                        <span>No</span>
+                      </Label>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="patientNo">Patient Number</Label>
-                    <Input
-                      id="patientNo"
-                      value={formData.patientNo || ""}
-                      onChange={(e) => handleInputChange('patientNo', e.target.value)}
-                      placeholder="Patient ID or reference number (if available)"
-                      className="mt-1"
-                    />
+                    {hasPatientNo && (
+                      <div className="patient-field">
+                        <Label htmlFor="patientNo" className="label">Patient Number</Label>
+                        <Input
+                          id="patientNo"
+                          value={formData.patientNo || ""}
+                          onChange={(e) => handleInputChange('patientNo', e.target.value)}
+                          placeholder="Patient ID or reference number (if available)"
+                          className="mt-1 input-field"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -354,13 +417,13 @@ export default function IndividualBookingPage() {
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Prescription</h3>
                   <div>
-                    <Label htmlFor="prescriptionFile">Upload Prescription</Label>
+                    <Label htmlFor="prescriptionFile" className="label">Upload Prescription</Label>
                     <Input
                       id="prescriptionFile"
                       type="file"
                       accept=".pdf,.jpg,.jpeg,.png"
                       onChange={(e) => handleInputChange('prescriptionFile', e.target.files?.[0] || null)}
-                      className="mt-1"
+                      className="mt-1 input-field"
                     />
                     <p className="text-sm text-gray-500 mt-1">
                       Upload your doctor's prescription (PDF, JPG, PNG formats accepted)
@@ -370,13 +433,13 @@ export default function IndividualBookingPage() {
 
                 {/* Special Requirements */}
                 <div>
-                  <Label htmlFor="additionalInfo">Additional Information or Notes</Label>
+                  <Label htmlFor="additionalInfo" className="label">Additional Information or Notes</Label>
                   <Textarea
                     id="additionalInfo"
                     value={formData.additionalInfo || ""}
                     onChange={(e) => handleInputChange('additionalInfo', e.target.value)}
                     placeholder="Any special instructions, medical conditions, or requirements we should know about"
-                    className="mt-1"
+                    className="mt-1 input-field"
                     rows={3}
                   />
                 </div>
@@ -388,25 +451,28 @@ export default function IndividualBookingPage() {
                     id="consent"
                     checked={formData.consent}
                     onChange={(e) => handleInputChange('consent', e.target.checked)}
-                    className="mt-1 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="mt-1 h-4 input-field text-primaryColour border-gray-300 rounded focus:ring-primaryColour"
                     required
                   />
-                  <Label htmlFor="consent" className="text-sm">
-                    I consent to the collection and processing of my personal and health information for the purpose of providing phlebotomy services. I understand that my information will be handled in accordance with privacy regulations. *
+                  <Label htmlFor="consent" className="text-sm text-gray-700">
+                    <p>
+                      By checking this box, I consent to the collection and processing of my personal and health information for the purpose of providing phlebotomy services. I understand that my information will be handled in accordance with
+                        <a 
+                          href="/Terms"
+                          className="text-primaryColor hover:underline ml-1"
+                        >
+                          Terms of Service and Privacy Policy.
+                        </a>
+                    </p>
+                      <span className="text-sm text-red-500"> *</span>
                   </Label>
                 </div>
-
-                {/* <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-blue-600 hover:bg-blue-700 py-3 text-lg"
-                >
-                  {isSubmitting ? "Submitting..." : "Submit Appointment Request"}
-                </Button> */}
+                                
                 <Button 
                   disable={isSubmitting} 
                   type="submit" 
                   label={isSubmitting ? "Submitting..." : "Submit Appointment Request"} 
+                  customStyle="w-full py-3 text-lg"
                 />
               </form>
             </CardContent>

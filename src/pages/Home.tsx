@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import { Card, CardContent } from "../components/ui/card";
-import { Badge } from "..//components/ui/badge";
+import { Badge } from "../components/ui/badge";
 import '../App.css';
 import { 
   Droplets,  
@@ -9,7 +9,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { services, benefits, hospitalAffiliationsBenefits, hospitalAffiliations } from "@/utils/ServiceDetails";
+import { services, benefits, hospitalAffiliationsBenefits, hospitalAffiliations } from "../utils/ServiceDetails";
 // import "../index.css";
 
 

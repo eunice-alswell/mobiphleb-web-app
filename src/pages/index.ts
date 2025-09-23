@@ -7,6 +7,7 @@ const IndividualBooking = lazy(() => import('./IndividualBooking'));
 const CorporateServices = lazy(() => import('./CorporateServices'));
 const Contact = lazy(() => import('./Contact'));
 const NotFound = lazy(() => import('./NotFound'));
+const Terms = lazy(() => import('./Terms'));
 
 
 const Pages = {
@@ -15,7 +16,8 @@ const Pages = {
     IndividualBooking,
     CorporateServices,
     Contact,
-    NotFound
+    NotFound,
+    Terms,
 }
 
 export default Pages;

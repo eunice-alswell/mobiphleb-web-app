@@ -1,0 +1,108 @@
+{
+    "privacyPolicy": [
+    {
+      "section": "Effective Date: October 1, 2025",
+      "content": [
+        {
+            "title": "MobiPhleb (“we,” “our,” “us”) respects your privacy and is committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application (“App”) and related services.",
+            "details": []
+        }
+      ]
+    },
+    {  
+      "section": "Information We Collect",
+      "content": [
+        {
+          "title": "Personal Information",
+          "details": [
+            "Name, phone number, email address, date of birth.",
+            "Address and location for phlebotomy visits.",
+            "Medical-related details (e.g., lab test requests, blood collection requirements)."
+          ]
+        },
+        {
+          "title": "Usage Information",
+          "details": [
+            "Device information (model, operating system, unique device ID).",
+            "IP address and browser type.",
+            "Log data about your interactions with the App (e.g., bookings, payments)."
+          ]
+        },
+        {
+          "title": "Payment Information",
+          "details": [
+            "Transaction details when you make payments.",
+            "(Note: We do not store full credit/debit card information; payments are processed securely through third-party providers.)"
+          ]
+        }
+      ]
+    },
+    {
+      "section": "How We Use Your Information",
+      "content": [
+        "Provide and manage bookings, phlebotomy services, and lab test requests.",
+        "Facilitate secure payments and transactions.",
+        "Send confirmations, updates, and notifications.",
+        "Improve our services, user experience, and security.",
+        "Comply with legal and regulatory obligations (especially regarding healthcare data)."
+      ]
+    },
+    {
+      "section": "How We Share Your Information",
+      "content": [
+        "Phlebotomists and healthcare professionals assigned to your service.",
+        "Laboratories and partner medical facilities to process your requests.",
+        "Payment processors to complete transactions securely.",
+        "Regulators or law enforcement where required by law.",
+        "We do not sell or rent your personal data to third parties."
+      ]
+    },
+    {
+      "section": "Data Storage & Security",
+      "content": [
+        "We use secure servers and encryption to protect your data.",
+        "Access to personal and medical information is restricted to authorized staff and partners.",
+        "While we take reasonable steps to protect your data, no system is 100% secure."
+      ]
+    },
+    {
+      "section": "Your Rights",
+      "content": [
+        "Access and request a copy of your data.",
+        "Correct or update your information.",
+        "Request deletion of your account and personal data (subject to medical/legal retention requirements).",
+        "Withdraw consent for processing certain information."
+      ]
+    },
+    {
+      "section": "Children’s Privacy",
+      "content": [
+        "Our services are not directed to individuals under 18 without parental/guardian consent.",
+        "If we discover data collected from a minor without proper consent, we will delete it."
+      ]
+    },
+    {
+      "section": "Third-Party Links & Services",
+      "content": [
+        "Our App may contain links to third-party services (e.g., payment providers, labs).",
+        "We are not responsible for their privacy practices."
+      ]
+    },
+    {
+      "section": "Updates to This Policy",
+      "content": [
+        "We may update this Privacy Policy periodically.",
+        "Changes will be posted within the App with an updated “Effective Date.”"
+      ]
+    },
+    {
+      "section": "Contact Us",
+      "content": [
+        "MobiPhleb Ghana Ltd.",
+        "Email: [Insert Support Email]",
+        "Phone: [Insert Support Phone Number]",
+        "Address: [Insert Company Address]"
+      ]
+    }
+  ]
+}

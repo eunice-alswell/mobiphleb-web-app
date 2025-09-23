@@ -15,6 +15,7 @@ export default function Router() {
                 <Route path="/individual-booking" element={<Pages.IndividualBooking />} />
                 <Route path="/corporate-services" element={<Pages.CorporateServices />} />
                 <Route path="/contact" element={<Pages.Contact />} />
+                <Route path="/terms" element={<Pages.Terms />} />
 
                 {/* catch-all not found route */}
                 <Route path="*" element={<Pages.NotFound />} />

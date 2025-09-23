@@ -1,0 +1,80 @@
+{
+  "termsAndConditions": [
+    {
+      "section": "Introduction",
+      "content": [
+        "Welcome to MobiPhleb. By accessing or using our mobile application and services, you agree to be bound by these Terms and Conditions.",
+        "If you do not agree, please discontinue use of the App."
+      ]
+    },
+    {
+      "section": "Use of Services",
+      "content": [
+        "You must be at least 18 years old or have parental/guardian consent to use our services.",
+        "You agree to provide accurate, complete, and up-to-date information when booking services or creating an account.",
+        "You are responsible for maintaining the confidentiality of your account details."
+      ]
+    },
+    {
+      "section": "Medical Disclaimer",
+      "content": [
+        "MobiPhleb connects you with qualified phlebotomists and healthcare partners.",
+        "We do not provide medical advice. Always consult a licensed healthcare professional for medical decisions.",
+        "Services provided are limited to blood sample collection and related logistics."
+      ]
+    },
+    {
+      "section": "Bookings & Payments",
+      "content": [
+        "Bookings must be made through the App.",
+        "Payment must be completed via the available secure methods in the App.",
+        "Cancellations and refunds are subject to our refund policy."
+      ]
+    },
+    {
+      "section": "User Responsibilities",
+      "content": [
+        "You agree not to misuse the App or interfere with its operation.",
+        "You agree not to provide false information or impersonate others.",
+        "You are responsible for ensuring phlebotomists can safely access your location for services."
+      ]
+    },
+    {
+      "section": "Data & Privacy",
+      "content": [
+        "Your personal and medical data will be processed according to our Privacy Policy.",
+        "By using the App, you consent to the collection and processing of your information as described."
+      ]
+    },
+    {
+      "section": "Limitation of Liability",
+      "content": [
+        "MobiPhleb will not be held liable for any indirect, incidental, or consequential damages arising from your use of the App.",
+        "We make reasonable efforts to ensure service quality but do not guarantee uninterrupted or error-free operation."
+      ]
+    },
+    {
+      "section": "Termination",
+      "content": [
+        "We may suspend or terminate your access if you violate these Terms.",
+        "You may terminate your account at any time by contacting support."
+      ]
+    },
+    {
+      "section": "Changes to Terms",
+      "content": [
+        "We may update these Terms periodically.",
+        "Continued use of the App after updates means you accept the revised Terms."
+      ]
+    },
+    {
+      "section": "Contact Us",
+      "content": [
+        "MobiPhleb Ghana Ltd.",
+        "Email: [Insert Support Email]",
+        "Phone: [Insert Support Phone Number]",
+        "Address: [Insert Company Address]"
+      ]
+    }
+  ]
+}
