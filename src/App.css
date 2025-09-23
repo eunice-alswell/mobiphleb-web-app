@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import "tailwindcss";
+
+@theme{
+  --color-primaryColor: #7766C5;
+  --color-secondary: #ff0000;
+  --color-accent: #f5f3ff;
+  --font-primary: 'Poppins', 'sans-serif';
+}
+
+.sub-heading {
+  @apply text-lg text-gray-500 max-w-3xl mx-auto mb-8 leading-relaxed;
+}
+
+.card-title {
+  @apply text-lg font-semibold text-gray-900 mb-4;
+}
+
+.card-p {
+  @apply text-sm text-gray-500  leading-relaxed;
+
+}
+
+.icon-div {
+  @apply w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-6;
+}
+.icon-div-sec {
+  @apply w-16 h-16 bg-[#ede9fe] rounded-full flex items-center justify-center mx-auto mb-6;
+}
+
+.icon {
+  @apply w-8 h-8 text-primaryColor;
+}
+
+.input-field {
+  @apply text-gray-900 border border-gray-300 rounded-md shadow-xs focus:ring-2 focus:ring-offset-2 focus:ring-primaryColor;
+}
+
+.label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
