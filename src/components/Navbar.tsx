@@ -10,7 +10,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
-} from "@/components/ui/sheet"; // <-- adjust path based on where shadcn/ui is installed
+} from "../components/ui/sheet";
 
 interface NavLinksProps {
   mobile?: boolean;
