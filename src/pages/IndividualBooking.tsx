@@ -17,8 +17,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import type { IndividualBookingFormData, Gender } from "@/utils/FormTypes";
-import Button from "@/components/Button";
-import { DatePickerInput } from "@/components/DatePicker";
+import Button from "../components/Button";
+import { DatePickerInput } from "../components/DatePicker";
 // import { Link } from "react-router-dom"; 
 
 export default function IndividualBooking() {
