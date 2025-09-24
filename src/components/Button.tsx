@@ -15,15 +15,30 @@ type ButtonProps = {
 export default function Button({variantStyle = "defualtStyle", size = "medium", onClick, label, rightIcon, leftIcon, type = "button", customStyle, disable}: ButtonProps) {
     // This is a simple button component that can be used in the in any part of the website.
     const variantStyles = {
-        defualtStyle: "text-white bg-primaryColor hover:bg-transparent hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center dark:bg-primaryColor dark:hover:bg-transparent dark:hover:border-2 dark:hover:border-primaryColor dark:hover:text-primaryColor dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
-        noBgStyle: "text-primaryColor bg-none hover:bg-transparent hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center dark:bg-none dark:hover:bg-transparent dark:hover:border-2 dark:hover:border-primaryColor dark:hover:text-primaryColor dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
-        secondaryStyle: "text-primaryColor bg-white hover:bg-transparent hover:border-2 hover:border-white hover:text-white focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-4xl text-sm text-center dark:bg-white dark:hover:bg-transparent dark:hover:border-2 dark:hover:border-white dark:hover:text-white dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
-        outlineStyle: "text-primaryColor border border-primaryColor bg-transparent hover:bg-primaryColor hover:text-white focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm px-5 py-2 text-center transition-colors duration-300 ease-in-out",
-        secondaryOutlineStyle: "text-white border border-white bg-transparent hover:bg-white hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-w font-medium rounded-4xl text-sm px-5 py-2 text-center transition-colors duration-300 ease-in-out",
-        iconstyle: "text-primaryColor bg-transparent hover:bg-transparent hover:outline-2 hover:outline-primaryColor focus:ring-2 focus:outline-none focus:ring-primaryColor font-medium rounded-full text-sm px-5 py-2 text-center dark:bg-primaryColor dark:hover:bg-primaryColor dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
+        defualtStyle:
+            "text-white bg-gradient-to-r from-purple-500 to-violet-500 hover:bg-none hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center transition-colors duration-300 ease-in-out",
+
+        noBgStyle:
+            "text-primaryColor bg-none hover:bg-none hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center dark:bg-none dark:hover:bg-transparent dark:hover:border-2 dark:hover:border-primaryColor dark:hover:text-primaryColor dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
+
+        secondaryStyle:
+            "text-primaryColor bg-white hover:bg-gradient-to-r hover:from-purple-500 hover:to-violet-500 hover:border-2 hover:border-white hover:text-white focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-4xl text-sm text-center dark:bg-white dark:hover:bg-gradient-to-r dark:hover:from-purple-500 dark:hover:to-violet-500 dark:hover:border-2 dark:hover:border-white dark:hover:text-white dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
+
+        outlineStyle:
+            "text-primaryColor border border-primaryColor bg-transparent hover:bg-gradient-to-r hover:from-purple-500 hover:to-violet-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm px-5 py-2 text-center transition-colors duration-300 ease-in-out",
+
+        secondaryOutlineStyle:
+            "text-white border border-white bg-transparent hover:bg-gradient-to-r hover:from-purple-500 hover:to-violet-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-4xl text-sm px-5 py-2 text-center transition-colors duration-300 ease-in-out",
+
+        iconstyle:
+            "text-primaryColor bg-transparent hover:bg-transparent hover:outline-2 hover:outline-primaryColor focus:ring-2 focus:outline-none focus:ring-primaryColor font-medium rounded-full text-sm px-5 py-2 text-center dark:bg-gradient-to-r dark:from-purple-500 dark:to-violet-500 dark:hover:bg-gradient-to-r dark:hover:from-purple-500 dark:hover:to-violet-500 dark:focus:ring-primaryColor transition-colors duration-300 ease-in-out",
+
         disabledStyle: "opacity-50 cursor-not-allowed",
-        whiteStyle: "text-white bg-transparent hover:bg-transparent hover:border-2 hover:border-white focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-4xl text-sm text-center dark:bg-none dark:hover:bg-transparent dark:hover:border-2 dark:hover:border-white dark:focus:ring-white transition-colors duration-300 ease-in-out",
-    };
+
+        whiteStyle:
+            "text-white bg-transparent hover:bg-transparent hover:text-white hover:border-2 hover:border-white focus:ring-4 focus:outline-none focus:ring-white font-medium rounded-4xl text-sm text-center dark:bg-none dark:hover:bg-transparent dark:hover:from-purple-500 dark:hover:to-violet-500 dark:hover:border-2 dark:hover:border-white dark:focus:ring-white transition-colors duration-300 ease-in-out",
+    }
+
 
     const sizeStyle = {
         small: "text-xs px-3 py-1",

@@ -161,7 +161,7 @@ export default function CorporateServicesPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -181,8 +181,8 @@ export default function CorporateServicesPage() {
                   development team will contact you within 48 hours to discuss your requirements 
                   and provide a customized proposal.
                 </p>
-                <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-violet-50 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-primaryColor">
                     <strong>Next Steps:</strong> We'll schedule a consultation call to understand 
                     your specific needs and create a tailored wellness program for your organization.
                   </p>
@@ -197,16 +197,16 @@ export default function CorporateServicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white">
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <section className="py-16 bg-gradient-to-r from-violet-600 to-purple-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <Building2 className="w-16 h-16 mx-auto mb-6 text-blue-200" />
+            <Building2 className="w-16 h-16 mx-auto mb-6 text-red-700" />
             <h1 className="text-3xl md:text-5xl font-bold mb-6">
               Corporate Wellness Solutions
             </h1>
@@ -242,13 +242,13 @@ export default function CorporateServicesPage() {
               >
                 <Card className="h-full text-center hover:shadow-lg transition-all duration-300 border-0 shadow-sm">
                   <CardContent className="p-8">
-                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <benefit.icon className="w-8 h-8 text-blue-600" />
+                    <div className="icon-div">
+                      <benefit.icon className="icon" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                    <h3 className="card-title">
                       {benefit.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="card-p">
                       {benefit.description}
                     </p>
                   </CardContent>
@@ -271,13 +271,13 @@ export default function CorporateServicesPage() {
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
                 Get Started with Corporate Services
               </h2>
-              <p className="text-lg text-gray-600">
+              <p className="sub-heading">
                 Tell us about your organization and we'll create a customized wellness solution
               </p>
             </div>
 
             <Card className="shadow-lg border-0">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+              <CardHeader className="h-16 flex items-center bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-t-lg">
                 <CardTitle className="text-xl flex items-center gap-2">
                   <Building2 className="w-6 h-6" />
                   Corporate Inquiry Form
@@ -297,60 +297,60 @@ export default function CorporateServicesPage() {
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="company_name">Company Name *</Label>
+                        <Label htmlFor="company_name" className="label">Company Name <span className="text-red-500">*</span></Label>
                         <Input
                           id="company_name"
                           value={formData.company_name}
                           onChange={(e) => handleInputChange('company_name', e.target.value)}
                           required
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="contact_person">Contact Person *</Label>
+                        <Label htmlFor="contact_person" className="label">Contact Person <span className="text-red-500">*</span></Label>
                         <Input
                           id="contact_person"
                           value={formData.contact_person}
                           onChange={(e) => handleInputChange('contact_person', e.target.value)}
                           required
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                     </div>
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="email">Business Email *</Label>
+                        <Label htmlFor="email" className="label">Business Email <span className="text-red-500">*</span></Label>
                         <Input
                           id="email"
                           type="email"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           required
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone">Business Phone *</Label>
+                        <Label htmlFor="phone" className="label">Business Phone <span className="text-red-500">*</span></Label>
                         <Input
                           id="phone"
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
                           required
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="company_address">Company Address</Label>
+                      <Label htmlFor="company_address" className="label">Company Address</Label>
                       <Textarea
                         id="company_address"
                         value={formData.company_address}
                         onChange={(e) => handleInputChange('company_address', e.target.value)}
                         placeholder="Complete business address where services would be provided"
-                        className="mt-1"
+                        className="mt-1 input-field"
                         rows={2}
                       />
                     </div>
@@ -362,16 +362,16 @@ export default function CorporateServicesPage() {
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="employees_count">Number of Employees *</Label>
+                        <Label htmlFor="employees_count" className="label">Number of Employees <span className="text-red-500">*</span></Label>
                         <Select 
                           value={formData.employees_count} 
                           onValueChange={
                             (value: string) => handleInputChange('employees_count', value)}
                         >
-                          <SelectTrigger className="mt-1">
+                          <SelectTrigger className="mt-1 input-field w-full">
                             <SelectValue placeholder="Select range" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white text-gray-900 border-none">
                             <SelectItem value="1-10">1-10 employees</SelectItem>
                             <SelectItem value="11-50">11-50 employees</SelectItem>
                             <SelectItem value="51-100">51-100 employees</SelectItem>
@@ -381,15 +381,15 @@ export default function CorporateServicesPage() {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="service_frequency">Service Frequency *</Label>
+                        <Label htmlFor="service_frequency" className="label">Service Frequency <span className="text-red-500">*</span></Label>
                         <Select 
                           value={formData.service_frequency} 
                           onValueChange={(value: string) => handleInputChange('service_frequency', value)}
                         >
-                          <SelectTrigger className="mt-1">
+                          <SelectTrigger className="mt-1 input-field w-full">
                             <SelectValue placeholder="Select frequency" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white text-gray-900 border-none">
                             <SelectItem value="one-time">One-time service</SelectItem>
                             <SelectItem value="monthly">Monthly</SelectItem>
                             <SelectItem value="quarterly">Quarterly</SelectItem>
@@ -401,10 +401,10 @@ export default function CorporateServicesPage() {
                     </div>
 
                     <div>
-                      <Label className="text-base font-medium">Services of Interest</Label>
+                      <Label className="label">Services of Interest</Label>
                       <div className="mt-3 space-y-3">
                         {serviceOptions.map((service) => (
-                          <div key={service.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50">
+                          <div key={service.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 input-field">
                             <Checkbox
                               id={service.id}
                               checked={formData.service_types?.includes(service.id) ?? false}
@@ -425,13 +425,13 @@ export default function CorporateServicesPage() {
 
                   {/* Additional Notes */}
                   <div>
-                    <Label htmlFor="additional_notes">Additional Requirements</Label>
+                    <Label htmlFor="additional_notes" className="label">Additional Requirements</Label>
                     <Textarea
                       id="additional_notes"
                       value={formData.additional_notes}
                       onChange={(e) => handleInputChange('additional_notes', e.target.value)}
                       placeholder="Any specific requirements, questions, or additional information about your needs"
-                      className="mt-1"
+                      className="mt-1 input-field"
                       rows={4}
                     />
                   </div>

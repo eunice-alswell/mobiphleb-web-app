@@ -125,7 +125,7 @@ export default function IndividualBooking() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -144,8 +144,8 @@ export default function IndividualBooking() {
                   Thank you for choosing Mobiphleb. We've received your appointment request and 
                   will contact you within 24 hours to confirm your booking and schedule details.
                 </p>
-                <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-violet-50 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-primaryColor">
                     <strong>Next Steps:</strong> Our team will call you to confirm your preferred 
                     time slot and provide any pre-test instructions if needed.
                   </p>
@@ -163,7 +163,7 @@ export default function IndividualBooking() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

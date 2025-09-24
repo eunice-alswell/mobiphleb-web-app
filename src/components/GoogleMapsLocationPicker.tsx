@@ -15,7 +15,7 @@ interface GoogleMapsLocationPickerProps {
   mapId?: string;
 }
 
-// Default coordinates → Greater Accra (stable top-level constant)
+// Default coords → Greater Accra
 const DEFAULT_COORDS = { lat: 5.614818, lng: -0.205874 };
 
 export default function GoogleMapsLocationPicker({
@@ -36,28 +36,22 @@ export default function GoogleMapsLocationPicker({
   const [isMapVisible, setIsMapVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Stable ref for the callback to avoid needing to include it in deps
+  // stable callback ref
   const onLocationSelectRef = useRef(onLocationSelect);
-  // keep ref updated when prop changes
   useEffect(() => {
     onLocationSelectRef.current = onLocationSelect;
   }, [onLocationSelect]);
 
-  // no local default coords; use DEFAULT_COORDS directly
-
-
-  // Place marker + center map
+  // ✅ Place marker + center map
   const updateMarker = useCallback((coords: { lat: number; lng: number }) => {
-    if (mapRef.current) {
-      mapRef.current.setCenter(coords);
-      mapRef.current.setZoom(15);
+    if (!mapRef.current || !markerRef.current) return;
 
-      if (!markerRef.current) return;
-      markerRef.current.setPosition(coords);
-    }
+    mapRef.current.setCenter(coords);
+    mapRef.current.setZoom(15);
+    markerRef.current.setPosition(coords);
   }, []);
 
-  // Reverse geocode coords → address
+  // ✅ Reverse geocode coords → address
   const reverseGeocode = useCallback(
     (coords: { lat: number; lng: number }) => {
       if (!geocoderRef.current) return;
@@ -67,7 +61,6 @@ export default function GoogleMapsLocationPicker({
           const address = results[0].formatted_address;
           setSelectedAddress(address);
           if (inputRef.current) inputRef.current.value = address;
-          // use the ref to call the latest callback
           onLocationSelectRef.current?.(address, coords);
         }
       });
@@ -83,65 +76,44 @@ export default function GoogleMapsLocationPicker({
       setIsLoading(true);
       try {
         const loader = new Loader({
-          apiKey: import.meta.env.VITE_REACT_APP_GOOGLE_MAPS_API_KEY,
+          apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
           version: "weekly",
           libraries: ["places"],
         });
-        // Use importLibrary to load specific modules (avoids deprecated loader.load())
+
         await loader.importLibrary("maps");
         await loader.importLibrary("places");
 
-  const { Map } = (await google.maps.importLibrary("maps")) as google.maps.MapsLibrary;
-  // prefer mapId prop, then env value
-  const effectiveMapId = mapId ?? import.meta.env.VITE_GOOGLE_MAP_ID;
-  // Note: AdvancedMarkerElement requires a valid Map ID. To avoid requiring a Map ID
-  // (and the console warning), we use the classic google.maps.Marker which does not
-  // require a Map ID. If you have a Map ID and want advanced markers, you can switch
-  // back to AdvancedMarkerElement and provide a mapId in the Map options.
-  // const { AdvancedMarkerElement } = (await google.maps.importLibrary("marker")) as google.maps.MarkerLibrary;
-
         geocoderRef.current = new google.maps.Geocoder();
 
-        // ✅ Initialize Map
+        // Initialize map
         const container = mapContainerRef.current!;
-        mapRef.current = new Map(container, {
+        mapRef.current = new google.maps.Map(container, {
           center: DEFAULT_COORDS,
           zoom: 13,
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
-          ...(effectiveMapId ? { mapId: effectiveMapId } : {}),
+          ...(mapId ? { mapId } : {}),
         });
 
-        // ✅ Add marker: use AdvancedMarkerElement if a mapId is available, otherwise use classic Marker
-        if (effectiveMapId) {
-          const { AdvancedMarkerElement } = (await google.maps.importLibrary("marker")) as google.maps.MarkerLibrary;
-          // AdvancedMarkerElement typing is not identical to google.maps.Marker, so cast safely
-          // Create an AdvancedMarkerElement with the same initial position
-          // AdvancedMarkerElement typings differ from google.maps.Marker. Cast the
-          // constructor arguments to compatible google.maps types, then cast the
-          // result back to `google.maps.Marker` for our markerRef storage.
-          markerRef.current = (new AdvancedMarkerElement({
-            map: mapRef.current as unknown as google.maps.Map,
-            position: DEFAULT_COORDS as unknown as google.maps.LatLngLiteral,
-            gmpDraggable: true,
-          }) as unknown) as google.maps.Marker;
-        } else {
-          markerRef.current = new google.maps.Marker({
-            map: mapRef.current,
-            position: DEFAULT_COORDS,
-            draggable: true,
-          });
-        }
+        // ✅ Classic marker (draggable)
+        markerRef.current = new google.maps.Marker({
+          map: mapRef.current,
+          position: DEFAULT_COORDS,
+          draggable: true,
+        });
 
-        // ✅ Setup Autocomplete
+        // ✅ Autocomplete
         if (inputRef.current) {
-          autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-            fields: ["formatted_address", "geometry"],
-            types: ["geocode"],
-            componentRestrictions: { country: "GH" },
-
-          });
+          autocompleteRef.current = new google.maps.places.Autocomplete(
+            inputRef.current,
+            {
+              fields: ["formatted_address", "geometry"],
+              types: ["geocode"],
+              componentRestrictions: { country: "GH" },
+            }
+          );
 
           autocompleteRef.current.addListener("place_changed", () => {
             const place = autocompleteRef.current?.getPlace();
@@ -151,7 +123,6 @@ export default function GoogleMapsLocationPicker({
               lat: place.geometry.location.lat(),
               lng: place.geometry.location.lng(),
             };
-
             updateMarker(coords);
             const address = place.formatted_address || "";
             setSelectedAddress(address);
@@ -238,7 +209,7 @@ export default function GoogleMapsLocationPicker({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex-col gap-2 lg:flex ">
+      <div className="flex-col gap-2 lg:flex">
         <Button
           type="button"
           onClick={() => setIsMapVisible(!isMapVisible)}

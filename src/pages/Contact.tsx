@@ -92,7 +92,7 @@ export default function Contact() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16">
+      <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -121,7 +121,7 @@ export default function Contact() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -133,7 +133,7 @@ export default function Contact() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Get in Touch
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="sub-heading">
             Have questions about our services? Need to schedule an appointment? 
             We're here to help and answer all your inquiries.
           </p>
@@ -149,16 +149,16 @@ export default function Contact() {
             >
               <Card className="shadow-lg border-0">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-xl">
-                    <MessageSquare className="w-6 h-6 text-blue-600" />
+                  <CardTitle className="flex items-center gap-2 text-xl text-gray-900">
+                    <MessageSquare className="w-6 h-6 text-primaryColor" />
                     Contact Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {contactInfo.map((info) => (
                     <div key={info.title} className="flex items-start space-x-4">
-                      <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center flex-shrink-0">
-                        <info.icon className="w-5 h-5 text-blue-600" />
+                      <div className="w-10 h-10 bg-violet-50 rounded-full flex items-center justify-center flex-shrink-0">
+                        <info.icon className="w-5 h-5 text-primaryColor" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-gray-900 mb-1">{info.title}</h4>
@@ -177,10 +177,10 @@ export default function Contact() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Card className="shadow-sm border-0 bg-blue-50">
+              <Card className="shadow-sm border-0 bg-violet-50">
                 <CardContent className="p-6">
-                  <h4 className="font-semibold text-blue-900 mb-2">Emergency Services</h4>
-                  <p className="text-blue-800 text-sm">
+                  <h4 className="font-semibold text-violet-900 mb-2">Emergency Services</h4>
+                  <p className="text-violet-800 text-sm">
                     For urgent blood testing needs outside regular hours, 
                     please call our emergency line for immediate assistance.
                   </p>
@@ -197,7 +197,7 @@ export default function Contact() {
               transition={{ duration: 0.6, delay: 0.3 }}
             >
               <Card className="shadow-lg border-0">
-                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+                <CardHeader className="h-16 flex items-center bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-t-lg">
                   <CardTitle className="text-xl flex items-center gap-2">
                     <Send className="w-6 h-6" />
                     Send us a Message
@@ -207,60 +207,60 @@ export default function Contact() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="name">Full Name *</Label>
+                        <Label htmlFor="name" className="label">Full Name <span className="text-red-500">*</span></Label>
                         <Input
                           id="name"
                           value={formData.name}
                           onChange={(e) => handleInputChange('name', e.target.value)}
                           required
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone">Phone Number</Label>
+                        <Label htmlFor="phone" className="label">Phone Number</Label>
                         <Input
                           id="phone"
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => handleInputChange('phone', e.target.value)}
-                          className="mt-1"
+                          className="mt-1 input-field"
                         />
                       </div>
                     </div>
                     
                     <div>
-                      <Label htmlFor="email">Email Address *</Label>
+                      <Label htmlFor="email" className="label">Email Address <span className="text-red-500">*</span></Label>
                       <Input
                         id="email"
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         required
-                        className="mt-1"
+                        className="mt-1 input-field"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="subject">Subject *</Label>
+                      <Label htmlFor="subject" className="label">Subject <span className="text-red-500">*</span></Label>
                       <Input
                         id="subject"
                         value={formData.subject}
                         onChange={(e) => handleInputChange('subject', e.target.value)}
                         placeholder="What can we help you with?"
                         required
-                        className="mt-1"
+                        className="mt-1 input-field"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="message">Message *</Label>
+                      <Label htmlFor="message" className="label">Message <span className="text-red-500">*</span></Label>
                       <Textarea
                         id="message"
                         value={formData.message}
                         onChange={(e) => handleInputChange('message', e.target.value)}
                         placeholder="Please provide details about your inquiry or requirements"
                         required
-                        className="mt-1"
+                        className="mt-1 input-field"
                         rows={5}
                       />
                     </div>
