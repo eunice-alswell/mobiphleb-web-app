@@ -18,15 +18,20 @@ export default function Home() {
   return (
     <div className="overflow-hidden">
       {/* Hero Section */}
-      <section
-        className="relative bg-gradient-to-r from-purple-50 via-white to-purple-50 pt-16 pb-24 bg-cover bg-center"
-        style={{ backgroundImage: `url('/phlebotomy_services.jpg')` }}
-      >
-  {/* gradient overlay (existing) */}
-  {/* <div className="absolute inset-0 bg-gradient-to-r from-purple-200 via-white to-purple-200 opacity-70 pointer-events-none"></div> */}
-  {/* translucent dim overlay to improve text contrast over the hero image */}
-  <div className="absolute inset-0 bg-violet-900/60 pointer-events-none z-0"></div>
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[70vh] flex flex-col justify-center relative z-10 text-white">
+      <section className="relative pt-16 pb-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/src/images/phlebotomy_services.avif')] bg-cover bg-center filter blur-sm scale-105" aria-hidden="true" />
+        <img
+          src="/src/images/phlebotomy_services-1280.avif"
+          srcSet="/src/images/phlebotomy_services.avif 480w, /src/images/phlebotomy_services.avif 768w, /src/images/phlebotomy_services.avif 1280w"
+          sizes="(max-width: 768px) 100vw, 1280px"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-violet-900/60 pointer-events-none z-0" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[70vh] flex flex-col justify-center relative z-10 text-white">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

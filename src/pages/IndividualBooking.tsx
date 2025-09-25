@@ -19,7 +19,7 @@ import { motion } from "framer-motion";
 import type { IndividualBookingFormData, Gender } from "@/utils/FormTypes";
 import Button from "../components/Button";
 import { DatePickerInput } from "../components/DatePicker";
-import TimePicker from "@/components/TimePicker";
+import TimePicker from "../components/TimePicker";
 // import { Link } from "react-router-dom"; 
 
 export default function IndividualBooking() {
