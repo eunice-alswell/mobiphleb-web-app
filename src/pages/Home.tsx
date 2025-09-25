@@ -19,7 +19,7 @@ export default function Home() {
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section className="relative pt-16 pb-24 overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/src/images/phlebotomy_services.avif')] bg-cover bg-center filter blur-sm scale-105" aria-hidden="true" />
+        <div aria-hidden="true" />
         <img
           src="/src/images/phlebotomy_services-1280.avif"
           srcSet="/src/images/phlebotomy_services.avif 480w, /src/images/phlebotomy_services.avif 768w, /src/images/phlebotomy_services.avif 1280w"
