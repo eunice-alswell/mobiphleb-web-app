@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-br from-violet-900 to-purple-900 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-4 lg:gap-8 ">
             <div className="col-span-2">
               <div className="flex items-center space-x-3 mb-4">
                 <img
@@ -46,7 +46,7 @@ export default function Footer() {
               </ul>
             </div>
 
-            <div>
+            <div className="pr-2">
               <h4 className="text-lg font-semibold mb-4 text-white">Contact Info</h4>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
