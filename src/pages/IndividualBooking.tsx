@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 import type { IndividualBookingFormData, Gender } from "@/utils/FormTypes";
 import Button from "../components/Button";
 import { DatePickerInput } from "../components/DatePicker";
+import TimePicker from "@/components/TimePicker";
 // import { Link } from "react-router-dom"; 
 
 export default function IndividualBooking() {
@@ -137,23 +138,16 @@ export default function IndividualBooking() {
                 <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="w-10 h-10 text-green-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                  Appointment Request Submitted!
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Appointment Request Submitted!</h2>
                 <p className="text-gray-600 mb-6 leading-relaxed">
-                  Thank you for choosing Mobiphleb. We've received your appointment request and 
-                  will contact you within 24 hours to confirm your booking and schedule details.
+                  Thank you for choosing Mobiphleb. We've received your appointment request and will contact you within 24 hours to confirm your booking and schedule details.
                 </p>
                 <div className="bg-violet-50 rounded-lg p-4 mb-6">
                   <p className="text-sm text-primaryColor">
-                    <strong>Next Steps:</strong> Our team will call you to confirm your preferred 
-                    time slot and provide any pre-test instructions if needed.
+                    <strong>Next Steps:</strong> Our team will call you to confirm your preferred time slot and provide any pre-test instructions if needed.
                   </p>
                 </div>
-                <Button 
-                  label="Book Another Appointment" 
-                  onClick={handleBookAnotherAppointment} 
-                  variantStyle="outlineStyle"/>
+                <Button label="Book Another Appointment" onClick={handleBookAnotherAppointment} variantStyle="outlineStyle" />
               </CardContent>
             </Card>
           </motion.div>
@@ -171,7 +165,7 @@ export default function IndividualBooking() {
           transition={{ duration: 0.6 }}
         >
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-xl lg:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Book Your Appointment
             </h1>
             <p className="sub-heading">
@@ -290,41 +284,17 @@ export default function IndividualBooking() {
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-4">
-                    {/* <div>
-                      <Label htmlFor="appointmentDate" className="label">Preferred Date <span className="text-red-500">*</span></Label>
-                      <Input
-                        id="appointmentDate"
-                        type="date"
-                        value={formData.appointmentDate}
-                        onChange={(e) => handleInputChange('appointmentDate', e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        required
-                        className="mt-1 input-field"
-                        <CalendarDays />
-                      />
-                    </div> */}
                     <div>
                       <Label htmlFor="appointmentDate" className="label">Preferred Date <span className="text-red-500">*</span></Label>
                       <DatePickerInput />
                     </div>
                     
-                    <div>
-                      <Label htmlFor="appointmentTime" className="label">Preferred Time <span className="text-red-500">*</span></Label>
-                      {/* <Select value={formData.appointmentTime} onValueChange={(value) => handleInputChange('appointmentTime', value)}>
-                        <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue placeholder="Select time slot" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border-none">
-                          {timeSlots.map((slot) => (
-                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select> */}
-                      <Input
-                        id="appointmentTime"
-                        type="time"
-                        value={formData.appointmentTime}
-                        onChange={(e) => handleInputChange('appointmentTime', e.target.value)}
+                    <div className="">
+                      <TimePicker
+                        label="Preferred Time"
+                        name="appointmentTime"
+                        defaultValue={formData.appointmentTime}
+                        onChange={(value) => handleInputChange('appointmentTime', value)}
                         required
                         className="mt-1 w-full input-field"
                       />

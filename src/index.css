@@ -13,6 +13,12 @@ h1 {
   line-height: 1.1;
 }
 
+input, button, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 /* Animation delay utilities for loader */
 .animation-delay-75 {
   animation-delay: 75ms;

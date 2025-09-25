@@ -130,7 +130,7 @@ export default function Contact() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-2xl lg:text-3xl md:text-5xl text-gray-900 font-bold mb-6">
             Get in Touch
           </h1>
           <p className="sub-heading">

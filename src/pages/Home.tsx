@@ -36,24 +36,25 @@ export default function Home() {
             <Badge variant="outline" className="mb-6 bg-white/10 text-white border-white/30">
               Professional Mobile Phlebotomy Services
             </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-3xl md:text-6xl  font-bold text-white mb-6 leading-tight">
               Blood Drawing at
               <span className="bg-gradient-to-r from-violet-900 to-purple-900 bg-clip-text text-transparent"> Your Doorstep</span>
             </h1>
-            <p className="text-lg text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
+            <p className="lg:text-lg text-base text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
               Skip the hospital queues. Our certified professionals bring laboratory-quality 
               phlebotomy services directly to your home or office. Safe, convenient, and reliable.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to={"/IndividualBooking"}>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              <Link to={"/individual-booking"}>
                 <Button 
                   label="Book Individual Service" 
                   size="large"
                   leftIcon={<Droplets className="w-5 h-5" />}
+                  
                 />
               </Link>
               
-              <Link to={"/CorporateBooking"}>
+              <Link to={"/corporate-services"}>
                 <Button 
                   variantStyle="secondaryOutlineStyle"
                   label="Book Corporate Service" 
@@ -168,12 +169,12 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
               Ready to Experience Convenient Blood Testing?
             </h2>
-            <p className="text-xl text-blue-100 mb-8 leading-relaxed">
+            <p className="text-base lg:text-lg md:text-lg text-gray-50 max-w-3xl mx-auto mb-8 leading-relaxed">
               Join thousands of satisfied patients who have chosen the convenience and 
               professionalism of Mobiphleb services.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Link to={"/IndividualBooking"}>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+              <Link to={"/individual-booking"}>
                 <Button 
                   size="large" 
                   label="Schedule Your Test" 
@@ -181,7 +182,7 @@ export default function Home() {
                   variantStyle="secondaryStyle"
                 />
               </Link>
-              <Link to={"/Contact"}>
+              <Link to={"/contact"}>
                 <Button 
                   size="large" 
                   label="Contact Us" 
@@ -220,12 +221,18 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.1 * index }}
                 className="flex flex-col items-center group"
               >
-                <div className="bg-gray-50 rounded-lg p-6 w-full h-24 flex items-center justify-center group-hover:bg-purple-50 transition-colors duration-300 border border-gray-100 group-hover:border-purple-200">
+                <div className="bg-gray-50 rounded-lg p-6 w-full h-auto flex items-center justify-center group-hover:bg-purple-50 transition-colors duration-300 border border-gray-100 group-hover:border-purple-200">
                   <div className="w-full h-auto rounded flex-col items-center justify-center">
-                    <img 
-                      src={hospital.logo} 
-                      alt={hospital.name}
-                    />
+                    {/* {hospital.logo && (
+                      <img
+                        src={hospital.logo}
+                        alt={hospital.name}
+                      />
+                    )} */}
+                    {/* dummy logo */}
+                    <div className="icon-div">
+                      <Building2 className="icon" />
+                    </div>
                     <p className="text-sm font-semibold text-gray-900 text-center px-2 leading-tight">
                       {hospital.name}
                     </p>

@@ -62,10 +62,10 @@ export default function About() {
             transition={{ duration: 0.8 }}
           >
             <Droplets className="w-16 h-16 mx-auto mb-6 text-red-500" />
-            <h1 className="text-3xl md:text-5xl font-bold mb-6">
+            <h1 className="text-2xl lg:text-3xl md:text-5xl font-bold mb-6">
               About Mobiphleb
             </h1>
-            <p className="text-lg text-grey-50 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base lg:text-lg md:text-lg text-grey-50 mb-8 max-w-3xl mx-auto leading-relaxed">
               Revolutionizing healthcare access through professional mobile phlebotomy services 
               that bring laboratory testing directly to your doorstep.
             </p>
@@ -244,7 +244,7 @@ export default function About() {
             transition={{ duration: 0.8, delay: 0.8 }}
           >
             <Card className="shadow-lg border-0 bg-white">
-              <CardContent className="p-12">
+              <CardContent className="p-8">
                 <div className="text-center mb-8">
                   <Users className="w-12 h-12 text-primaryColor mx-auto mb-4" />
                   <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -289,7 +289,7 @@ export default function About() {
               We proudly serve the Greater Metro Area with plans for continued expansion. 
               Our mobile units can reach you whether you're at home, in the office, or at a care facility.
             </p>
-            <Badge variant="outline" className="px-6 py-3 text-base text-primaryColor border-[#ddd6fe]">
+            <Badge variant="outline" className="px-2 lg:p-6 py-3 text-xs lg:text-base text-primaryColor border-[#ddd6fe]">
               Expanding Service Areas - Contact us for availability
             </Badge>
           </motion.div>

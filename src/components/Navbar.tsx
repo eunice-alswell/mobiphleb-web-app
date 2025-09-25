@@ -44,7 +44,7 @@ export default function Navbar() {
             `block px-4 py-2 rounded-md transition-colors duration-200 ${
               isActive
                 ? "text-primaryColor font-semibold"
-                : "text-gray-600 hover:bg-gray-100 hover:text-black"
+                : "text-gray-900 hover:bg-gray-100 hover:text-black"
             }`
           }
         >
@@ -84,18 +84,20 @@ export default function Navbar() {
             {/* Mobile Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <Menu className="w-6 h-6 md:hidden" />
+                <div className="cursor-pointer bg-accent p-2 rounded-md">
+                  <Menu className="w-6 h-6 md:hidden text-violet-900" />
+                </div>
               </SheetTrigger>
               {/* Sidebar (from right, full height) */}
               <SheetContent
                 side="right"
-                className="w-3/4 sm:w-1/2 md:w-1/3 flex flex-col"
+                className="w-3/4 sm:w-1/2 md:w-1/3 flex flex-col bg-white"
               >
                 <div className="mt-6 flex flex-col space-y-6">
                   <NavLinks mobile closeSheet={() => setIsOpen(false)} />
-                  <div>
+                  <div className="px-4">
                     <SheetClose asChild>
-                      <Link to="/individual-booking">
+                      <Link to="/individual-booking" >
                         <Button label="Book Now" customStyle="w-full" />
                       </Link>
                     </SheetClose>

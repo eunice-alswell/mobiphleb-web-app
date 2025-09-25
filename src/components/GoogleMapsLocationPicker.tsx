@@ -208,47 +208,48 @@ export default function GoogleMapsLocationPicker({
         />
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex-col gap-2 lg:flex">
-        <Button
-          type="button"
-          onClick={() => setIsMapVisible(!isMapVisible)}
-          variantStyle="outlineStyle"
-          leftIcon={<MapPin className="w-4 h-4" />}
-          label={isMapVisible ? "Hide Map" : "Pick on Map"}
-        />
-        <Button
-          type="button"
-          onClick={handleUseCurrentLocation}
-          variantStyle="outlineStyle"
-          leftIcon={<MapPin className="w-4 h-4" />}
-          label="Use Current Location"
-        />
-      </div>
+      {/* Toggle Map Button */}
+      <Button
+        type="button"
+        onClick={() => setIsMapVisible(!isMapVisible)}
+        variantStyle="outlineStyle"
+        leftIcon={<MapPin className="w-4 h-4" />}
+        label={isMapVisible ? "Hide Map" : "Pick on Map"}
+        customStyle="mb-2 w-full lg:w-auto"
+      />
 
       {/* Map */}
       {isMapVisible && (
-        <div className="border rounded-lg overflow-hidden relative">
-          <div ref={mapContainerRef} className="w-full h-64" />
-          {isLoading && (
-            <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
-                <p className="text-sm text-gray-600">Loading...</p>
-              </div>
+        <div className="flex flex-col space-y-2">
+          <Button
+            type="button"
+            onClick={handleUseCurrentLocation}
+            variantStyle="outlineStyle"
+            leftIcon={<MapPin className="w-4 h-4" />}
+            label="Use Current Location"
+          />
+          {/* Selected address */}
+          {selectedAddress && (
+            <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-xs text-green-800">
+                <strong>Selected Location:</strong> {selectedAddress}
+              </p>
             </div>
           )}
+          <div className="border rounded-lg overflow-hidden relative">
+            <div ref={mapContainerRef} className="w-full h-64" />
+            {isLoading && (
+              <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600">Loading...</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Selected address */}
-      {selectedAddress && (
-        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-800">
-            <strong>Selected Location:</strong> {selectedAddress}
-          </p>
-        </div>
-      )}
 
       <p className="text-xs text-gray-500">
         Search, click the map, or drag the marker to pick your location.

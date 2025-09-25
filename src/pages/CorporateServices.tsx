@@ -207,10 +207,10 @@ export default function CorporateServicesPage() {
             transition={{ duration: 0.8 }}
           >
             <Building2 className="w-16 h-16 mx-auto mb-6 text-red-700" />
-            <h1 className="text-3xl md:text-5xl font-bold mb-6">
+            <h1 className="text-2xl lg:text-3xl md:text-5xl font-bold mb-6">
               Corporate Wellness Solutions
             </h1>
-            <p className="text-xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base lg:text-lg md:text-lg text-grey-50 mb-8 max-w-3xl mx-auto leading-relaxed">
               Enhance employee health and productivity with on-site phlebotomy services. 
               Professional, convenient, and tailored to your organization's needs.
             </p>
