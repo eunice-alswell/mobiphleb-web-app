@@ -19,7 +19,7 @@ export default function Home() {
     <div className="overflow-hidden">
       {/* Hero Section */}
       <section className="relative pt-16 pb-24 overflow-hidden">
-        <div aria-hidden="true" />
+        <div className="absolute inset-0 bg-[url('/src/images/phlebotomy_services.avif')] bg-cover bg-center" aria-hidden="true" />
         <img
           src="/src/images/phlebotomy_services-1280.avif"
           srcSet="/src/images/phlebotomy_services.avif 480w, /src/images/phlebotomy_services.avif 768w, /src/images/phlebotomy_services.avif 1280w"
@@ -43,7 +43,7 @@ export default function Home() {
             </Badge>
             <h1 className="text-4xl sm:text-3xl md:text-6xl  font-bold text-white mb-6 leading-tight">
               Blood Drawing at
-              <span className="bg-gradient-to-r from-violet-900 to-purple-900 bg-clip-text text-transparent"> Your Doorstep</span>
+              <span className="bg-gradient-to-r from-violet-900 to-purple-900 bg-clip-text text-transparent text-shadow-white"> Your Doorstep</span>
             </h1>
             <p className="lg:text-lg text-base text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
               Skip the hospital queues. Our certified professionals bring laboratory-quality 
