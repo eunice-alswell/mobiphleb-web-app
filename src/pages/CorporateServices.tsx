@@ -1,5 +1,11 @@
+/**
+ * Corporate Services Page
+ * Corporate wellness inquiry form integrated with backend API
+ * Allows organizations to request corporate health services
+ */
+
 import React, { useState } from "react";
-// import { Button } from "@/components/ui/button";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -14,102 +20,115 @@ import {
   Shield, 
   TrendingUp, 
   CheckCircle,
-  // Heart,
-  // Activity,
-  // UserCheck,
-  // Calendar,
-  // Phone,
-  // Mail
+  AlertCircle
 } from "lucide-react";
 import { motion } from "framer-motion";
-import type { CorporateInquiryFormData } from "@/utils/FormTypes";
+import { createCorporateRequest } from "../lib/apiServices";
 
-// interface FormData {
-//   company_name: string;
-//   contact_person: string;
-//   email: string;
-//   phone: string;
-//   company_address: string;
-//   employees_count: string;
-//   service_frequency: string;
-//   service_types: string[];
-//   additional_notes: string;
-// }
-
-type CorporateFormField = keyof CorporateInquiryFormData;
+/**
+ * Form data structure for corporate inquiry
+ */
+interface CorporateFormData {
+  companyName: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  companyAddress: string;
+  numberOfEmployees: string;
+  serviceFrequency: string;
+  servicesOfInterest: string[];
+  additionalNotes: string;
+}
 
 export default function CorporateServicesPage() {
-  const [formData, setFormData] = useState<CorporateInquiryFormData>({
-    company_name: "",
-    contact_person: "",
+  // Form state
+  const [formData, setFormData] = useState<CorporateFormData>({
+    companyName: "",
+    contactPerson: "",
     email: "",
     phone: "",
-    company_address: "",
-    employees_count: "",
-    service_frequency: "",
-    service_types: [],
-    additional_notes: ""
+    companyAddress: "",
+    numberOfEmployees: "",
+    serviceFrequency: "",
+    servicesOfInterest: [],
+    additionalNotes: ""
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleInputChange = (field: CorporateFormField, value: string) => {
+  /**
+   * React Query mutation for creating corporate request
+   * Handles API communication and state management
+   */
+  const mutation = useMutation({
+    mutationFn: createCorporateRequest,
+    onSuccess: (data) => {
+      console.log('Corporate request created successfully:', data);
+    },
+    onError: (error: Error) => {
+      console.error('Error creating corporate request:', error);
+    },
+  });
+
+  /**
+   * Handle input field changes
+   */
+  const handleInputChange = (field: keyof CorporateFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
-    setError("");
   };
 
+  /**
+   * Handle service type checkbox changes
+   */
   const handleServiceTypeChange = (serviceType: string, checked: boolean) => {
     setFormData(prev => ({
       ...prev,
-      service_types: checked 
-        ? [...(prev.service_types ?? []), serviceType]
-        : (prev.service_types ?? []).filter(type => type !== serviceType)
+      servicesOfInterest: checked 
+        ? [...prev.servicesOfInterest, serviceType]
+        : prev.servicesOfInterest.filter(type => type !== serviceType)
     }));
   };
 
+  /**
+   * Handle form submission
+   * Transforms form data to match backend API expectations (snake_case)
+   */
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
-  
-    try {
-      // const res = await fetch("/api/corporate-inquiry", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify(formData),
-      // });
-      // if (!res.ok) {
-      //   const text = await res.text().catch(() => null);
-      //   throw new Error(text || "Failed to submit corporate inquiry");
-      // }
-      console.log("Form submitted", formData);
-      // Simulate successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+
+    // Transform form data to API format with snake_case
+    const apiData = {
+      company_name: formData.companyName,
+      contact_person: formData.contactPerson,
+      email: formData.email,
+      phone: formData.phone,
+      company_address: formData.companyAddress || undefined,
+      employees_count: formData.numberOfEmployees,
+      service_frequency: formData.serviceFrequency,
+      service_types: formData.servicesOfInterest,
+      additional_notes: formData.additionalNotes || undefined,
+    };
+
+    // Submit to API
+    mutation.mutate(apiData);
   };
 
+  /**
+   * Reset form for another inquiry
+   */
   const handleSubmitAnotherInquiry = () => {
-    setSubmitted(false);
+    mutation.reset();
     setFormData({
-      company_name: "",
-      contact_person: "",
+      companyName: "",
+      contactPerson: "",
       email: "",
       phone: "",
-      company_address: "",
-      employees_count: "",
-      service_frequency: "",
-      service_types: [],
-      additional_notes: ""
+      companyAddress: "",
+      numberOfEmployees: "",
+      serviceFrequency: "",
+      servicesOfInterest: [],
+      additionalNotes: ""
     });
   };
 
@@ -159,7 +178,10 @@ export default function CorporateServicesPage() {
     }
   ];
 
-  if (submitted) {
+  /**
+   * Success state - show after successful submission
+   */
+  if (mutation.isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,6 +218,9 @@ export default function CorporateServicesPage() {
     );
   }
 
+  /**
+   * Main corporate inquiry form
+   */
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white">
       {/* Hero Section */}
@@ -284,9 +309,13 @@ export default function CorporateServicesPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-8">
-                {error && (
+                {/* Error alert */}
+                {mutation.isError && (
                   <Alert variant="destructive" className="mb-6">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {mutation.error?.message || "Something went wrong. Please try again."}
+                    </AlertDescription>
                   </Alert>
                 )}
 
@@ -297,21 +326,21 @@ export default function CorporateServicesPage() {
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="company_name" className="label">Company Name <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="companyName" className="label">Company Name <span className="text-red-500">*</span></Label>
                         <Input
-                          id="company_name"
-                          value={formData.company_name}
-                          onChange={(e) => handleInputChange('company_name', e.target.value)}
+                          id="companyName"
+                          value={formData.companyName}
+                          onChange={(e) => handleInputChange('companyName', e.target.value)}
                           required
                           className="mt-1 input-field"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="contact_person" className="label">Contact Person <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="contactPerson" className="label">Contact Person <span className="text-red-500">*</span></Label>
                         <Input
-                          id="contact_person"
-                          value={formData.contact_person}
-                          onChange={(e) => handleInputChange('contact_person', e.target.value)}
+                          id="contactPerson"
+                          value={formData.contactPerson}
+                          onChange={(e) => handleInputChange('contactPerson', e.target.value)}
                           required
                           className="mt-1 input-field"
                         />
@@ -328,6 +357,7 @@ export default function CorporateServicesPage() {
                           onChange={(e) => handleInputChange('email', e.target.value)}
                           required
                           className="mt-1 input-field"
+                          placeholder="company@example.com"
                         />
                       </div>
                       <div>
@@ -339,16 +369,17 @@ export default function CorporateServicesPage() {
                           onChange={(e) => handleInputChange('phone', e.target.value)}
                           required
                           className="mt-1 input-field"
+                          placeholder="+233 30 123 4567"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <Label htmlFor="company_address" className="label">Company Address</Label>
+                      <Label htmlFor="companyAddress" className="label">Company Address</Label>
                       <Textarea
-                        id="company_address"
-                        value={formData.company_address}
-                        onChange={(e) => handleInputChange('company_address', e.target.value)}
+                        id="companyAddress"
+                        value={formData.companyAddress}
+                        onChange={(e) => handleInputChange('companyAddress', e.target.value)}
                         placeholder="Complete business address where services would be provided"
                         className="mt-1 input-field"
                         rows={2}
@@ -362,11 +393,12 @@ export default function CorporateServicesPage() {
                     
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="employees_count" className="label">Number of Employees <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="numberOfEmployees" className="label">Number of Employees <span className="text-red-500">*</span></Label>
                         <Select 
-                          value={formData.employees_count} 
+                          value={formData.numberOfEmployees} 
                           onValueChange={
-                            (value: string) => handleInputChange('employees_count', value)}
+                            (value: string) => handleInputChange('numberOfEmployees', value)}
+                          required
                         >
                           <SelectTrigger className="mt-1 input-field w-full">
                             <SelectValue placeholder="Select range" />
@@ -381,10 +413,11 @@ export default function CorporateServicesPage() {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="service_frequency" className="label">Service Frequency <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="serviceFrequency" className="label">Service Frequency <span className="text-red-500">*</span></Label>
                         <Select 
-                          value={formData.service_frequency} 
-                          onValueChange={(value: string) => handleInputChange('service_frequency', value)}
+                          value={formData.serviceFrequency} 
+                          onValueChange={(value: string) => handleInputChange('serviceFrequency', value)}
+                          required
                         >
                           <SelectTrigger className="mt-1 input-field w-full">
                             <SelectValue placeholder="Select frequency" />
@@ -407,7 +440,7 @@ export default function CorporateServicesPage() {
                           <div key={service.id} className="flex items-start space-x-3 p-3 border rounded-lg hover:bg-gray-50 input-field">
                             <Checkbox
                               id={service.id}
-                              checked={formData.service_types?.includes(service.id) ?? false}
+                              checked={formData.servicesOfInterest.includes(service.id)}
                               onCheckedChange={(checked: boolean) => handleServiceTypeChange(service.id, checked)}
                               className="mt-0.5"
                             />
@@ -425,11 +458,11 @@ export default function CorporateServicesPage() {
 
                   {/* Additional Notes */}
                   <div>
-                    <Label htmlFor="additional_notes" className="label">Additional Requirements</Label>
+                    <Label htmlFor="additionalNotes" className="label">Additional Requirements</Label>
                     <Textarea
-                      id="additional_notes"
-                      value={formData.additional_notes}
-                      onChange={(e) => handleInputChange('additional_notes', e.target.value)}
+                      id="additionalNotes"
+                      value={formData.additionalNotes}
+                      onChange={(e) => handleInputChange('additionalNotes', e.target.value)}
                       placeholder="Any specific requirements, questions, or additional information about your needs"
                       className="mt-1 input-field"
                       rows={4}
@@ -437,10 +470,10 @@ export default function CorporateServicesPage() {
                   </div>
                   <Button
                     type="submit"
-                    label={isSubmitting ? "Submitting..." : "Request Corporate Consultation"}
+                    label={mutation.isPending ? "Submitting..." : "Request Corporate Consultation"}
                     size="large"
                     customStyle="w-full bg-blue-600 hover:bg-blue-700 py-3 text-lg"
-                    disable={isSubmitting}
+                    disable={mutation.isPending}
                   />
                 </form>
               </CardContent>

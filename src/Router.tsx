@@ -14,6 +14,8 @@ export default function Router() {
                 <Route path="/about" element={<Pages.About />} />
                 <Route path="/individual-booking" element={<Pages.IndividualBooking />} />
                 <Route path="/corporate-services" element={<Pages.CorporateServices />} />
+                <Route path="/payment" element={<Pages.Payment />} />
+                <Route path="/booking-success" element={<Pages.BookingSuccess />} />
                 <Route path="/contact" element={<Pages.Contact />} />
                 <Route path="/terms" element={<Pages.Terms />} />
 

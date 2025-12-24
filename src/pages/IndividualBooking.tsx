@@ -1,4 +1,12 @@
+/**
+ * Individual Booking Page
+ * Guest appointment booking form integrated with backend API
+ * Supports guest users without authentication
+ */
+
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -10,112 +18,171 @@ import {
   CalendarDays, 
   Clock, 
   MapPin,
-  // Phone,
   User, 
-  // Mail, 
-  CheckCircle 
+  AlertCircle 
 } from "lucide-react";
 import { motion } from "framer-motion";
-import type { IndividualBookingFormData, Gender } from "@/utils/FormTypes";
-import Button from "../components/Button";
+import { Button } from "../components/ui/button";
 import { DatePickerInput } from "../components/DatePicker";
 import TimePicker from "../components/TimePicker";
-// import { Link } from "react-router-dom"; 
+import { createGuestAppointment } from "../lib/apiServices";
+import type { RelationshipType, Gender } from "../types/api";
+
+/**
+ * Form data structure for the booking form
+ */
+interface BookingFormData {
+  // Patient relationship
+  relationshipToUser: RelationshipType;
+  
+  // Patient information (required if not SELF)
+  patientName: string;
+  patientEmail: string;
+  patientPhone: string;
+  patientAge: string;
+  patientGender: Gender | null;
+  
+  // Appointment details
+  appointmentDate: string;
+  appointmentTime: string;
+  location: string;
+  
+  // Lab information
+  facilityId: string;
+  serviceType: string;
+  patientNumber: string;
+  
+  // Additional
+  notes: string;
+  prescriptionFile: File | null;
+  consent: boolean;
+}
 
 export default function IndividualBooking() {
-  const [formData, setFormData] = useState<IndividualBookingFormData>({
-    name: "",
-    age: "",
-    gender: null,
-    phone: "",
-    location: "",
+  const navigate = useNavigate();
+  
+  // Form state
+  const [formData, setFormData] = useState<BookingFormData>({
+    relationshipToUser: "SELF",
+    patientName: "",
+    patientEmail: "",
+    patientPhone: "",
+    patientAge: "",
+    patientGender: null,
     appointmentDate: "",
     appointmentTime: "",
-    LabFacility: "",
-    patientNo: "",
-    LabType: "",
+    location: "",
+    facilityId: "",
+    serviceType: "",
+    patientNumber: "",
+    notes: "",
     prescriptionFile: null,
-    additionalInfo: "",
     consent: false
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+
   const [hasPatientNo, setHasPatientNo] = useState(false);
 
-  const handleInputChange = (
-      field: keyof IndividualBookingFormData, 
-      value: string | boolean | File | null | Gender
-    ) => {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      })
-    );
-      setError("");
+  /**
+   * On success, redirects to payment page
+   */
+  const mutation = useMutation({
+    mutationFn: createGuestAppointment,
+    onSuccess: (data) => {
+      console.log('Appointment created successfully:', data);
+      
+      // Redirect to payment page with appointment data
+      navigate('/payment', {
+        state: {
+          appointmentId: data.data?.id,
+          appointmentData: formData,
+          email: formData.relationshipToUser === 'SELF' 
+            ? formData.patientEmail 
+            : formData.patientEmail
+        }
+      });
+    },
+    onError: (error: Error) => {
+      console.error('Error creating appointment:', error);
+    },
+  });
+
+  /**
+   * Handle input field changes
+   */
+  const handleInputChange = <K extends keyof BookingFormData>(
+    field: K,
+    value: BookingFormData[K]
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
+  /**
+   * Validate if all required fields are filled
+   * Returns true if form is valid
+   */
+  const isFormValid = (): boolean => {
+    // Check basic required fields
+    if (!formData.appointmentDate || 
+        !formData.appointmentTime || 
+        !formData.location || 
+        !formData.facilityId || 
+        !formData.consent) {
+      return false;
+    }
+
+    // If booking for someone else, check patient information
+    if (formData.relationshipToUser !== 'SELF') {
+      if (!formData.patientName || 
+          !formData.patientEmail || 
+          !formData.patientPhone) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  /**
+   * Handle form submission
+   * Transforms form data to match backend API expectations
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
 
-    try {
-      // const res = await fetch('https://api.mobiphleb.com/appointments', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${process.env.API_TOKEN}`
-      //   },
-      //   body: JSON.stringify(formData)
-      // });
-      console.log("Form Data Submitted: ", formData);
-      setSubmitted(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Transform form data to API format
+    const apiData = {
+      relationshipToUser: formData.relationshipToUser,
+      patientName: formData.patientName,
+      patientEmail: formData.relationshipToUser,
+      patientPhone: formData.relationshipToUser,
+      patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
+      patientGender: formData.patientGender || undefined,
+      appointmentDate: formData.appointmentDate,
+      appointmentTime: formData.appointmentTime,
+      location: formData.location,
+      facilityId: formData.facilityId || undefined,
+      serviceId: formData.serviceType || undefined,
+      patientNumber: formData.patientNumber || undefined,
+      notes: formData.notes || undefined,
+      labRequestFile: formData.prescriptionFile || undefined,
+    };
+
+    // Submit to API
+    mutation.mutate(apiData);
   };
 
-  const handleBookAnotherAppointment = () => {
-    setSubmitted(false);
-    setFormData({
-      name: "",
-      age: "",
-      gender: null,
-      phone: "",
-      location: "",
-      appointmentDate: "",
-      appointmentTime: "",
-      LabFacility: "",
-      patientNo: "",
-      LabType: "",
-      prescriptionFile: null,
-      additionalInfo: "",
-      consent: false
-    });
-  };
+  // Hardcoded facilities - should be fetched from API in production
+  const facilities = [
+    { id: "1", name: "Quest Diagnostics" },
+    { id: "2", name: "LabCorp" },
+    { id: "3", name: "Accra Central Lab" },
+    { id: "4", name: "MobiPhleb Partner Lab" }
+  ];
 
-  // const timeSlots = [
-  //   "8:00 AM - 9:00 AM",
-  //   "9:00 AM - 10:00 AM", 
-  //   "10:00 AM - 11:00 AM",
-  //   "11:00 AM - 12:00 PM",
-  //   "1:00 PM - 2:00 PM",
-  //   "2:00 PM - 3:00 PM",
-  //   "3:00 PM - 4:00 PM",
-  //   "4:00 PM - 5:00 PM"
-  // ];
-
-  // Example facilities list — replace with API-driven list when onboarding facilities
-  const [facilities] = useState<string[]>([
-    "Quest Diagnostics",
-    "LabCorp",
-    "Accra Central Lab",
-    "MobiPhleb Partner Lab"
-  ]);
-
+  // Service types
   const serviceTypes = [
     { value: "routine_blood_work", label: "Routine Blood Work" },
     { value: "comprehensive_panel", label: "Comprehensive Panel" },
@@ -124,38 +191,21 @@ export default function IndividualBooking() {
     { value: "other", label: "Other (specify in notes)" }
   ];
 
-  if (submitted) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <Card className="text-center shadow-lg border-0">
-              <CardContent className="p-12">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <CheckCircle className="w-10 h-10 text-green-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Appointment Request Submitted!</h2>
-                <p className="text-gray-600 mb-6 leading-relaxed">
-                  Thank you for choosing Mobiphleb. We've received your appointment request and will contact you within 24 hours to confirm your booking and schedule details.
-                </p>
-                <div className="bg-violet-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-primaryColor">
-                    <strong>Next Steps:</strong> Our team will call you to confirm your preferred time slot and provide any pre-test instructions if needed.
-                  </p>
-                </div>
-                <Button label="Book Another Appointment" onClick={handleBookAnotherAppointment} variantStyle="outlineStyle" />
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
+  // Relationship options
+  const relationshipOptions: { value: RelationshipType; label: string }[] = [
+    { value: 'SELF', label: 'Myself' },
+    { value: 'CHILD', label: 'My Child' },
+    { value: 'PARENT', label: 'My Parent' },
+    { value: 'SPOUSE', label: 'My Spouse' },
+    { value: 'SIBLING', label: 'My Sibling' },
+    { value: 'RELATIVE', label: 'Other Relative' },
+    { value: 'FRIEND', label: 'Friend' },
+    { value: 'OTHER', label: 'Other' },
+  ];
 
+  /**
+   * Main booking form
+   */
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -164,6 +214,7 @@ export default function IndividualBooking() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
+          {/* Page header */}
           <div className="text-center mb-8">
             <h1 className="text-xl lg:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Book Your Appointment
@@ -181,78 +232,181 @@ export default function IndividualBooking() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              {error && (
+              {/* Error alert */}
+              {mutation.isError && (
                 <Alert variant="destructive" className="mb-6">
-                  <AlertDescription>{error}</AlertDescription>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    {mutation.error instanceof Error
+                      ? mutation.error.message
+                      : mutation.error
+                      ? String(mutation.error)
+                      : "Something went wrong. Please try again."}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-10">
-                {/* Personal Information */}
+                {/* Who is this appointment for? */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                     <div className="w-10 h-10 p-2 bg-[#ddd6fe] rounded-full flex items-center justify-center">
                       <User className="icon" />
                     </div>
-                    Personal Information
+                    Who is this appointment for?
+                  </h3>
+                  
+                  <div>
+                    <Label htmlFor="relationshipToUser" className="label">
+                      I am booking for <span className="text-red-500">*</span>
+                    </Label>
+                    <Select 
+                      value={formData.relationshipToUser} 
+                      onValueChange={(value: RelationshipType) => 
+                        handleInputChange('relationshipToUser', value)
+                      }
+                      required
+                    >
+                      <SelectTrigger className="mt-1 w-full input-field">
+                        <SelectValue placeholder="Select relationship" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white text-gray-900 border-none">
+                        {relationshipOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Patient Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Patient Information
                   </h3>
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="name" className="label">Full Name <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="patientName" className="label">
+                        Full Name <span className="text-red-500">*</span>
+                      </Label>
                       <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
+                        id="patientName"
+                        value={formData.patientName}
+                        onChange={(e) => handleInputChange('patientName', e.target.value)}
                         required
                         className="mt-1 input-field"
+                        placeholder="Patient's full name"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="age" className="label">Age <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="patientEmail" className="label">
+                        Email <span className="text-red-500">*</span>
+                      </Label>
                       <Input
-                        id="age"
-                        type="number"
-                        value={formData.age}
-                        onChange={(e) => handleInputChange('age', e.target.value)}
+                        id="patientEmail"
+                        type="email"
+                        value={formData.patientEmail}
+                        onChange={(e) => handleInputChange('patientEmail', e.target.value)}
                         required
                         className="mt-1 input-field"
-                        min="0"
-                        max="120"
+                        placeholder="patient@example.com"
                       />
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="gender" className="label">Gender</Label>
-                      <Select 
-                        value={formData.gender || ""} 
-                        onValueChange={(value) => handleInputChange('gender', value as Gender)}
-                      >
-                        <SelectTrigger className="mt-1 w-full input-field">
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border-none">
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="phone" className="label">Phone Number <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="patientPhone" className="label">
+                        Phone Number <span className="text-red-500">*</span>
+                      </Label>
                       <Input
-                        id="phone"
+                        id="patientPhone"
                         type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        value={formData.patientPhone}
+                        onChange={(e) => handleInputChange('patientPhone', e.target.value)}
                         required
                         className="mt-1 input-field"
+                        placeholder="+233 24 123 4567"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="patientAge" className="label">
+                        Age
+                      </Label>
+                      <Input
+                        id="patientAge"
+                        type="number"
+                        value={formData.patientAge}
+                        onChange={(e) => handleInputChange('patientAge', e.target.value)}
+                        className="mt-1 input-field"
+                        min="0"
+                        max="150"
+                        placeholder="Age"
                       />
                     </div>
                   </div>
+
+                  <div>
+                    <Label htmlFor="patientGender" className="label">Gender</Label>
+                    <Select 
+                      value={formData.patientGender || ""} 
+                      onValueChange={(value: Gender) => handleInputChange('patientGender', value)}
+                    >
+                      <SelectTrigger className="mt-1 w-full input-field">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white text-gray-900 border-none">
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
+                {/* Self booking basic info */}
+                {/* {formData.relationshipToUser === 'SELF' && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      Your Information (Optional)
+                    </h3>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="patientAge" className="label">Age</Label>
+                        <Input
+                          id="patientAge"
+                          type="number"
+                          value={formData.patientAge}
+                          onChange={(e) => handleInputChange('patientAge', e.target.value)}
+                          className="mt-1 input-field"
+                          min="0"
+                          max="150"
+                          placeholder="Your age"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="patientGender" className="label">Gender</Label>
+                        <Select 
+                          value={formData.patientGender || ""} 
+                          onValueChange={(value: Gender) => handleInputChange('patientGender', value)}
+                        >
+                          <SelectTrigger className="mt-1 w-full input-field">
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white text-gray-900 border-none">
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                )} */}
 
                 {/* Service Location */}
                 <div className="space-y-4">
@@ -264,10 +418,8 @@ export default function IndividualBooking() {
                   </h3>
                   
                   <GoogleMapsLocationPicker
-                    onLocationSelect={(address, coordinates) => {
+                    onLocationSelect={(address) => {
                       handleInputChange('location', address);
-                      // You can also store coordinates if needed
-                      console.log('Selected coordinates:', coordinates);
                     }}
                     initialValue={formData.location}
                     required={true}
@@ -285,11 +437,19 @@ export default function IndividualBooking() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="appointmentDate" className="label">Preferred Date <span className="text-red-500">*</span></Label>
-                      <DatePickerInput />
+                      <Label htmlFor="appointmentDate" className="label">
+                        Preferred Date <span className="text-red-500">*</span>
+                      </Label>
+                      <DatePickerInput 
+                        value =  {formData.appointmentDate}
+                        onChange={(date) => handleInputChange('appointmentDate', date ? date : "")}
+                      />
                     </div>
                     
-                    <div className="">
+                    <div>
+                      <Label htmlFor="appointmentTime" className="block text-sm font-medium text-gray-700 pt-2">
+                        Preferred Time <span className="text-red-500">*</span>
+                      </Label>
                       <TimePicker
                         label="Preferred Time"
                         name="appointmentTime"
@@ -308,23 +468,32 @@ export default function IndividualBooking() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="LabFacility" className="label">Lab Facility <span className="text-red-500">*</span></Label>
-                      <Select value={formData.LabFacility} onValueChange={(value) => handleInputChange('LabFacility', value)}>
+                      <Label htmlFor="facilityId" className="label">
+                        Lab Facility <span className="text-red-500">*</span>
+                      </Label>
+                      <Select 
+                        value={formData.facilityId} 
+                        onValueChange={(value) => handleInputChange('facilityId', value)}
+                        required
+                      >
                         <SelectTrigger className="mt-1 input-field w-full">
                           <SelectValue placeholder="Select a lab facility" />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900 border-none">
                           {facilities.map((f) => (
-                            <SelectItem key={f} value={f}>{f}</SelectItem>
+                            <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="LabType" className="label">Lab Type</Label>
-                      <Select value={formData.LabType || ""} onValueChange={(value) => handleInputChange('LabType', value)}>
+                      <Label htmlFor="serviceType" className="label">Service Type</Label>
+                      <Select 
+                        value={formData.serviceType || ""} 
+                        onValueChange={(value) => handleInputChange('serviceType', value)}
+                      >
                         <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue placeholder="Select lab type" />
+                          <SelectValue placeholder="Select service type" />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900 border-none">
                           {serviceTypes.map((service) => (
@@ -336,14 +505,13 @@ export default function IndividualBooking() {
                       </Select>
                     </div>
                   </div>
+
                   {/* Patient Number Section */}
-                  {/* Show patient number input only if user selects "Yes" */}
                   <div className="patient-number-section">
                     <Label className="label">Are you a patient at the selected facility?</Label>
                     <div className="flex items-center gap-4 mb-3">
                       <Label className="inline-flex items-center text-gray-700">
                         <input
-                          id="hasPatientNoYes"
                           type="radio"
                           name="hasPatientNo"
                           className="mr-2"
@@ -354,14 +522,13 @@ export default function IndividualBooking() {
                       </Label>
                       <Label className="inline-flex items-center text-gray-700">
                         <input
-                          id="hasPatientNoNo"
                           type="radio"
                           name="hasPatientNo"
                           className="mr-2"
                           checked={!hasPatientNo}
                           onChange={() => {
                             setHasPatientNo(false);
-                            handleInputChange('patientNo', '');
+                            handleInputChange('patientNumber', '');
                           }}
                         />
                         <span>No</span>
@@ -370,12 +537,12 @@ export default function IndividualBooking() {
 
                     {hasPatientNo && (
                       <div className="patient-field">
-                        <Label htmlFor="patientNo" className="label">Patient Number</Label>
+                        <Label htmlFor="patientNumber" className="label">Patient Number</Label>
                         <Input
-                          id="patientNo"
-                          value={formData.patientNo || ""}
-                          onChange={(e) => handleInputChange('patientNo', e.target.value)}
-                          placeholder="Patient ID or reference number (if available)"
+                          id="patientNumber"
+                          value={formData.patientNumber || ""}
+                          onChange={(e) => handleInputChange('patientNumber', e.target.value)}
+                          placeholder="Patient ID or reference number"
                           className="mt-1 input-field"
                         />
                       </div>
@@ -403,11 +570,11 @@ export default function IndividualBooking() {
 
                 {/* Special Requirements */}
                 <div>
-                  <Label htmlFor="additionalInfo" className="label">Additional Information or Notes</Label>
+                  <Label htmlFor="notes" className="label">Additional Information or Notes</Label>
                   <Textarea
-                    id="additionalInfo"
-                    value={formData.additionalInfo || ""}
-                    onChange={(e) => handleInputChange('additionalInfo', e.target.value)}
+                    id="notes"
+                    value={formData.notes || ""}
+                    onChange={(e) => handleInputChange('notes', e.target.value)}
                     placeholder="Any special instructions, medical conditions, or requirements we should know about"
                     className="mt-1 input-field"
                     rows={3}
@@ -426,24 +593,36 @@ export default function IndividualBooking() {
                   />
                   <Label htmlFor="consent" className="text-sm text-gray-700">
                     <p>
-                      By checking this box, I consent to the collection and processing of my personal and health information for the purpose of providing phlebotomy services. I understand that my information will be handled in accordance with
-                        <a 
-                          href="/Terms"
-                          className="text-primaryColor hover:underline ml-1"
-                        >
-                          Terms of Service and Privacy Policy.
-                        </a>
+                      By checking this box, I consent to the collection and processing of my personal 
+                      and health information for the purpose of providing phlebotomy services. I understand 
+                      that my information will be handled in accordance with
+                      <a 
+                        href="/Terms"
+                        className="text-primaryColor hover:underline ml-1"
+                      >
+                        Terms of Service and Privacy Policy.
+                      </a>
                     </p>
-                      <span className="text-sm text-red-500"> *</span>
+                    <span className="text-sm text-red-500"> *</span>
                   </Label>
                 </div>
                                 
-                <Button 
-                  disable={isSubmitting} 
-                  type="submit" 
-                  label={isSubmitting ? "Submitting..." : "Submit Appointment Request"} 
-                  customStyle="w-full py-3 text-lg"
-                />
+                {/* Submit Button */}
+                <div className="">
+                  {/* <Button 
+                    disable={mutation.isPending || !isFormValid()} 
+                    type="submit" 
+                    label={mutation.isPending ? "Processing..." : "Continue to Payment"} 
+                    customStyle="w-full py-3 text-lg"
+                  /> */}
+                  <Button 
+                    disabled={mutation.isPending || !isFormValid()} 
+                    type="submit" 
+                    className="w-full py-3 text-white bg-gradient-to-r from-purple-500 to-violet-500 hover:bg-none hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center transition-colors duration-300 ease-in-out"
+                  >
+                    {mutation.isPending ? "Processing..." : "Continue to Payment"}
+                  </Button>
+                </div>
               </form>
             </CardContent>
           </Card>

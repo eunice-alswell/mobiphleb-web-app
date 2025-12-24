@@ -43,7 +43,7 @@ export default function Home() {
             </Badge>
             <h1 className="text-4xl sm:text-3xl md:text-6xl  font-bold text-white mb-6 leading-tight">
               Blood Drawing at
-              <span className="bg-gradient-to-r from-violet-900 to-purple-900 bg-clip-text text-transparent text-shadow-white"> Your Doorstep</span>
+              <span className="bg-gradient-to-r from-violet-900 to-purple-900 bg-clip-text text-transparent text-shadow-white [-webkit-text-stroke:2px_white]"> Your Doorstep</span>
             </h1>
             <p className="lg:text-lg text-base text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
               Skip the hospital queues. Our certified professionals bring laboratory-quality 

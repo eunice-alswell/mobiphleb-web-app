@@ -10,7 +10,6 @@ export interface TimePickerProps
 }
 
 const TimePicker: React.FC<TimePickerProps> = ({
-  label = "Select Time",
   defaultValue,
   onChange,
   required,
@@ -63,15 +62,15 @@ const TimePicker: React.FC<TimePickerProps> = ({
   }, [open]);
 
   return (
-    <div className="space-y-1">
-      {label && (
-        <label
-          htmlFor={name}
-          className="label"
-        >
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-      )}
+    // <div className="space-y-1">
+    //   {label && (
+    //     <label
+    //       htmlFor={name}
+    //       className="label"
+    //     >
+    //       {label} {required && <span className="text-red-500">*</span>}
+    //     </label>
+    //   )}
 
       <div className="relative" ref={containerRef}>
         {/* Input field */}
@@ -84,13 +83,13 @@ const TimePicker: React.FC<TimePickerProps> = ({
           onFocus={() => setOpen(true)}
           onClick={() => setOpen(true)}
           required={required}
-          className={`border rounded-lg px-3 py-2 w-full text-sm pr-10 
+          className={`border rounded-lg px-3 py-1.5 w-full text-sm pr-10 
             focus:ring-2 focus:ring-purple-500 focus:outline-none ${className}`}
           {...rest}
         />
 
         <Clock
-          className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none"
+          className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
         />
         {open && (
           <div className="absolute z-50 right-0 mt-2 text-gray-900 w-full bg-white border-none rounded shadow">
@@ -112,7 +111,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
           </div>
         )}
       </div>
-    </div>
+    // </div>
   );
 };
 
