@@ -30,20 +30,17 @@ export const createGuestAppointment = async (
   
   // Append all appointment data to FormData
   formData.append('relationshipToUser', appointmentData.relationshipToUser);
-  
-  // Patient information (required if not booking for self)
-  if (appointmentData.relationshipToUser !== 'SELF') {
-    if (appointmentData.patientName) {
-      formData.append('patientName', appointmentData.patientName);
-    }
-    if (appointmentData.patientEmail) {
-      formData.append('patientEmail', appointmentData.patientEmail);
-    }
-    if (appointmentData.patientPhone) {
-      formData.append('patientPhone', appointmentData.patientPhone);
-    }
+
+  if (appointmentData.patientName) {
+    formData.append('patientName', appointmentData.patientName);
   }
-  
+  if (appointmentData.patientEmail) {
+    formData.append('patientEmail', appointmentData.patientEmail);
+  }
+  if (appointmentData.patientPhone) {
+    formData.append('patientPhone', appointmentData.patientPhone);
+  }
+   
   // Optional patient details
   if (appointmentData.patientAge !== undefined) {
     formData.append('patientAge', appointmentData.patientAge.toString());
