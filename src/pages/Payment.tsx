@@ -42,6 +42,7 @@ export default function Payment() {
   // Get appointment data from navigation state
   const appointmentData = location.state?.appointmentData;
   const appointmentId = location.state?.appointmentId;
+  // const patientEmail = appointmentData?.patientEmail || appointmentData?.email || '';
 
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>(null);
 

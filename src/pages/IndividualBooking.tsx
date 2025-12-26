@@ -6,12 +6,17 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { 
+  Select,
+  SelectContent,
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue } from "../components/ui/select";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import GoogleMapsLocationPicker from "../components/GoogleMapsLocationPicker";
 import { 
@@ -25,8 +30,12 @@ import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { DatePickerInput } from "../components/DatePicker";
 import TimePicker from "../components/TimePicker";
-import { createGuestAppointment } from "../lib/apiServices";
-import type { RelationshipType, Gender } from "../types/api";
+import { 
+  createGuestAppointment, 
+  getActivePartneredFacilities, 
+  getActivePartnerServices 
+} from "../lib/apiServices";
+import type { RelationshipType, Gender, PartnerFacility,Service } from "../types/api";
 
 /**
  * Form data structure for the booking form
@@ -63,7 +72,7 @@ export default function IndividualBooking() {
   
   // Form state
   const [formData, setFormData] = useState<BookingFormData>({
-    relationshipToUser: "SELF",
+    relationshipToUser: "OTHER",
     patientName: "",
     patientEmail: "",
     patientPhone: "",
@@ -82,6 +91,20 @@ export default function IndividualBooking() {
 
   const [hasPatientNo, setHasPatientNo] = useState(false);
 
+  // Fetch active partner facilites and their services for facility selection
+  const {data:facilitiesData, isLoading:facilitiesLoading} = useQuery({
+    queryKey: ['facilities'],
+    queryFn: getActivePartneredFacilities,
+  });
+
+  const {data:servicesData, isLoading:servicesLoading} = useQuery({
+    queryKey: ['services'],
+    queryFn: getActivePartnerServices,
+  });
+
+  const facilities = facilitiesData?.data || [];
+  const services = servicesData?.data || [];
+
   /**
    * On success, redirects to payment page
    */
@@ -95,9 +118,7 @@ export default function IndividualBooking() {
         state: {
           appointmentId: data.data?.id,
           appointmentData: formData,
-          email: formData.relationshipToUser === 'SELF' 
-            ? formData.patientEmail 
-            : formData.patientEmail
+          email: formData.patientEmail 
         }
       });
     },
@@ -127,23 +148,27 @@ export default function IndividualBooking() {
     // Check basic required fields
     if (!formData.appointmentDate || 
         !formData.appointmentTime || 
-        !formData.location || 
+        !formData.location ||
+        !formData.patientName || 
+        !formData.patientEmail || 
+        !formData.patientPhone || 
         !formData.facilityId || 
         !formData.consent) {
       return false;
     }
-
-    // If booking for someone else, check patient information
-    if (formData.relationshipToUser !== 'SELF') {
-      if (!formData.patientName || 
-          !formData.patientEmail || 
-          !formData.patientPhone) {
-        return false;
-      }
-    }
-
     return true;
-  };
+  }
+  //   // If booking for someone else, check patient information
+  //   if (formData.relationshipToUser !== 'SELF') {
+  //     if (!formData.patientName || 
+  //         !formData.patientEmail || 
+  //         !formData.patientPhone) {
+  //       return false;
+  //     }
+  //   }
+
+  //   return true;
+  // };
 
   /**
    * Handle form submission
@@ -156,8 +181,8 @@ export default function IndividualBooking() {
     const apiData = {
       relationshipToUser: formData.relationshipToUser,
       patientName: formData.patientName,
-      patientEmail: formData.relationshipToUser,
-      patientPhone: formData.relationshipToUser,
+      patientEmail: formData.patientEmail,
+      patientPhone: formData.patientPhone,
       patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
       patientGender: formData.patientGender || undefined,
       appointmentDate: formData.appointmentDate,
@@ -170,26 +195,28 @@ export default function IndividualBooking() {
       labRequestFile: formData.prescriptionFile || undefined,
     };
 
+    console.log('Submitting appointment data:', apiData);
+
     // Submit to API
     mutation.mutate(apiData);
   };
 
-  // Hardcoded facilities - should be fetched from API in production
-  const facilities = [
-    { id: "1", name: "Quest Diagnostics" },
-    { id: "2", name: "LabCorp" },
-    { id: "3", name: "Accra Central Lab" },
-    { id: "4", name: "MobiPhleb Partner Lab" }
-  ];
+  // // Hardcoded facilities - should be fetched from API in production
+  // const facilities = [
+  //   { id: "1", name: "Quest Diagnostics" },
+  //   { id: "2", name: "LabCorp" },
+  //   { id: "3", name: "Accra Central Lab" },
+  //   { id: "4", name: "MobiPhleb Partner Lab" }
+  // ];
 
-  // Service types
-  const serviceTypes = [
-    { value: "routine_blood_work", label: "Routine Blood Work" },
-    { value: "comprehensive_panel", label: "Comprehensive Panel" },
-    { value: "diabetes_monitoring", label: "Diabetes Monitoring" },
-    { value: "cholesterol_check", label: "Cholesterol Check" },
-    { value: "other", label: "Other (specify in notes)" }
-  ];
+  // // Service types
+  // const serviceTypes = [
+  //   { value: "routine_blood_work", label: "Routine Blood Work" },
+  //   { value: "comprehensive_panel", label: "Comprehensive Panel" },
+  //   { value: "diabetes_monitoring", label: "Diabetes Monitoring" },
+  //   { value: "cholesterol_check", label: "Cholesterol Check" },
+  //   { value: "other", label: "Other (specify in notes)" }
+  // ];
 
   // Relationship options
   const relationshipOptions: { value: RelationshipType; label: string }[] = [
@@ -477,12 +504,28 @@ export default function IndividualBooking() {
                         required
                       >
                         <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue placeholder="Select a lab facility" />
+                          <SelectValue 
+                              placeholder={
+                              facilitiesLoading
+                                ? "Loading facilities..."
+                                : "Select a lab facility"
+                            } 
+                          />
                         </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border-none">
-                          {facilities.map((f) => (
-                            <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                          ))}
+                        <SelectContent className="bg-white text-gray-900 border-none text-wrap ">
+                          {
+                            facilities.length === 0 && !facilitiesLoading ? (
+                              <SelectItem value="No-facilities" disabled>
+                                No facilities available
+                              </SelectItem>
+                            ) : (
+                              facilities.map((facility:PartnerFacility) => (
+                                <SelectItem key={facility.id} value={facility.id}>
+                                  {facility.facilityName}
+                                </SelectItem>
+                              ))
+                            )
+                          }
                         </SelectContent>
                       </Select>
                     </div>
@@ -493,14 +536,28 @@ export default function IndividualBooking() {
                         onValueChange={(value) => handleInputChange('serviceType', value)}
                       >
                         <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue placeholder="Select service type" />
+                          <SelectValue 
+                            placeholder= {
+                              servicesLoading
+                                ? "Loading service types..."
+                                : "Select service type" 
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent className="bg-white text-gray-900 border-none">
-                          {serviceTypes.map((service) => (
-                            <SelectItem key={service.value} value={service.value}>
-                              {service.label}
-                            </SelectItem>
-                          ))}
+                          {
+                            services.length === 0 && !servicesLoading ? (
+                              <SelectItem value="No-services" disabled>
+                                No services available
+                              </SelectItem>
+                            ) : (
+                              services.map((service:Service) => (
+                                <SelectItem key={service.id} value={service.id}>
+                                  {service.name}
+                                </SelectItem>
+                              ))
+                            )
+                          }
                         </SelectContent>
                       </Select>
                     </div>
@@ -552,9 +609,9 @@ export default function IndividualBooking() {
 
                 {/* Prescription Upload */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Prescription</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Lab Request</h3>
                   <div>
-                    <Label htmlFor="prescriptionFile" className="label">Upload Prescription</Label>
+                    <Label htmlFor="prescriptionFile" className="label">Upload Lab Request</Label>
                     <Input
                       id="prescriptionFile"
                       type="file"
@@ -563,7 +620,7 @@ export default function IndividualBooking() {
                       className="mt-1 input-field"
                     />
                     <p className="text-sm text-gray-500 mt-1">
-                      Upload your doctor's prescription (PDF, JPG, PNG formats accepted)
+                      Upload your doctor's lab request (PDF, JPG, PNG formats accepted)
                     </p>
                   </div>
                 </div>

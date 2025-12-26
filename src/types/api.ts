@@ -80,15 +80,15 @@ export interface AppointmentResponse {
  * Corporate request data structure
  */
 export interface CorporateRequestData {
-  company_name: string;
-  contact_person: string;
+  companyName: string;
+  contactPerson: string;
   email: string;
-  phone: string;
-  company_address?: string;
-  employees_count: string;
-  service_frequency: string;
-  service_types?: string[];
-  additional_notes?: string;
+  phoneNumber: string;
+  address?: string;
+  numberOfEmployees: string;
+  serviceFrequency: string;
+  servicesOfInterest?: string[];
+  additionalRequirements?: string;
 }
 
 /**
@@ -99,7 +99,7 @@ export interface CorporateRequestResponse {
   message: string;
   data?: {
     id: string;
-    company_name: string;
+    companyName: string;
     status: string;
     createdAt: string;
   };
@@ -175,3 +175,104 @@ export interface VerifyPaymentResponse {
     status: PaymentStatus;
   };
 }
+
+
+// ADDED: Partner Facility Interface
+/**
+ * Partner Facility (Lab/Hospital)
+ */
+export interface PartnerFacility {
+  id: string;
+  facilityName: string;
+  contactPerson: string;
+  email: string;
+  phoneNumber: string;
+  address: string;
+  city?: string;
+  region?: string;
+  isActive: boolean;
+  additionalInformation?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ADDED: Service Category Enum
+export type ServiceCategory = 
+  'BLOOD_TEST' |
+  'HEALTH_SCREENING'|
+  'VACCINATION' |
+  'HOME_VISIT' |
+  'CONSULTATION' |
+  'DIAGNOSTIC' |
+  'IMAGING' |
+  'OTHER'
+
+
+// ADDED: Service Interface
+/**
+ * Medical Service
+ */
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  category?: ServiceCategory;
+  isActive: boolean;
+  basePrice?: number;
+  duration?: number; // Duration in minutes
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ADDED: Facility Service (Service offered by a specific facility)
+/**
+ * Service offered by a specific facility with custom pricing
+ */
+export interface FacilityService {
+  id: string;
+  facilityId: string;
+  serviceId: string;
+  price: number;
+  isActive: boolean;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  facility: PartnerFacility;
+  service: Service;
+}
+
+// ADDED: API Response wrapper for facilities
+export interface PartnerFacilitiesResponse {
+  success: boolean;
+  message: string;
+  data: PartnerFacility[];
+  meta?: {
+    total: number;
+    page?: number;
+    limit?: number;
+  };
+}
+
+// ADDED: API Response wrapper for services
+export interface ServicesResponse {
+  success: boolean;
+  message: string;
+  data: Service[];
+  meta?: {
+    total: number;
+    page?: number;
+    limit?: number;
+  };
+}
+
+// ADDED: API Response wrapper for facility services
+export interface FacilityServicesResponse {
+  success: boolean;
+  message: string;
+  data: FacilityService[];
+  meta?: {
+    total: number;
+  };
+}
+
+

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Button from "../components/Button";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
+import phlebotomyServices from '../images/phlebotomy_services.avif'; 
 import '../App.css';
 import { 
   Droplets,  
@@ -21,11 +22,9 @@ export default function Home() {
       <section className="relative pt-16 pb-24 overflow-hidden">
         <div className="absolute inset-0 bg-[url('/src/images/phlebotomy_services.avif')] bg-cover bg-center" aria-hidden="true" />
         <img
-          src="/src/images/phlebotomy_services-1280.avif"
-          srcSet="/src/images/phlebotomy_services.avif 480w, /src/images/phlebotomy_services.avif 768w, /src/images/phlebotomy_services.avif 1280w"
-          sizes="(max-width: 768px) 100vw, 1280px"
+          src={phlebotomyServices}
           className="absolute inset-0 w-full h-full object-cover object-center"
-          alt=""
+          alt="Phlebotomy Services"
           aria-hidden="true"
           fetchPriority="high"
           loading="eager"

@@ -108,13 +108,13 @@ export const createCorporateRequest = async (
 };
 
 /**
- * Get all partner services (facilities)
- * GET /partner-services
+ * Get all partnered facilities
+ * GET /partnered-facilities/active
  * 
- * @returns Promise with list of partner services
+ * @returns Promise with list of partner facilities
  */
-export const getPartnerServices = async () => {
-  const response = await apiClient.get('/partner-services');
+export const getActivePartneredFacilities = async () => {
+  const response = await apiClient.get('partnered-facilities/active');
   return response.data;
 };
 
@@ -143,7 +143,7 @@ export const initializePayment = async (
   paymentData: Omit<InitializePaymentData, 'appointmentId'>
 ): Promise<InitializePaymentResponse> => {
   const response = await apiClient.post<InitializePaymentResponse>(
-    `/payments/initialize/${appointmentId}`,
+    `/payments/initialize/guest/${appointmentId}`,
     {
       transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       email: paymentData.email,

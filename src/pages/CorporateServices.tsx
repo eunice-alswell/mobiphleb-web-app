@@ -20,7 +20,8 @@ import {
   Shield, 
   TrendingUp, 
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  ArrowBigDown
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { createCorporateRequest } from "../lib/apiServices";
@@ -32,12 +33,12 @@ interface CorporateFormData {
   companyName: string;
   contactPerson: string;
   email: string;
-  phone: string;
-  companyAddress: string;
+  phoneNumber: string;
+  address: string;
   numberOfEmployees: string;
   serviceFrequency: string;
   servicesOfInterest: string[];
-  additionalNotes: string;
+  additionalRequirements: string;
 }
 
 export default function CorporateServicesPage() {
@@ -46,13 +47,15 @@ export default function CorporateServicesPage() {
     companyName: "",
     contactPerson: "",
     email: "",
-    phone: "",
-    companyAddress: "",
+    phoneNumber: "",
+    address: "",
     numberOfEmployees: "",
     serviceFrequency: "",
     servicesOfInterest: [],
-    additionalNotes: ""
+    additionalRequirements: ""
   });
+
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   /**
    * React Query mutation for creating corporate request
@@ -62,6 +65,13 @@ export default function CorporateServicesPage() {
     mutationFn: createCorporateRequest,
     onSuccess: (data) => {
       console.log('Corporate request created successfully:', data);
+      setShowSuccessMessage(true);
+      
+      // Auto-hide success message after 10 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        handleSubmitAnotherInquiry();
+      }, 10000);
     },
     onError: (error: Error) => {
       console.error('Error creating corporate request:', error);
@@ -86,7 +96,7 @@ export default function CorporateServicesPage() {
       ...prev,
       servicesOfInterest: checked 
         ? [...prev.servicesOfInterest, serviceType]
-        : prev.servicesOfInterest.filter(type => type !== serviceType)
+        : prev.servicesOfInterest.filter((type: string) => type !== serviceType)
     }));
   };
 
@@ -99,15 +109,15 @@ export default function CorporateServicesPage() {
 
     // Transform form data to API format with snake_case
     const apiData = {
-      company_name: formData.companyName,
-      contact_person: formData.contactPerson,
+      companyName: formData.companyName,
+      contactPerson: formData.contactPerson,
       email: formData.email,
-      phone: formData.phone,
-      company_address: formData.companyAddress || undefined,
-      employees_count: formData.numberOfEmployees,
-      service_frequency: formData.serviceFrequency,
-      service_types: formData.servicesOfInterest,
-      additional_notes: formData.additionalNotes || undefined,
+      phoneNumber: formData.phoneNumber,
+      address: formData.address || undefined,
+      numberOfEmployees: formData.numberOfEmployees,
+      serviceFrequency: formData.serviceFrequency,
+      servicesOfInterest: formData.servicesOfInterest,
+      additionalRequirements: formData.additionalRequirements || undefined,
     };
 
     // Submit to API
@@ -123,12 +133,12 @@ export default function CorporateServicesPage() {
       companyName: "",
       contactPerson: "",
       email: "",
-      phone: "",
-      companyAddress: "",
+      phoneNumber: "",
+      address: "",
       numberOfEmployees: "",
       serviceFrequency: "",
       servicesOfInterest: [],
-      additionalNotes: ""
+      additionalRequirements: ""
     });
   };
 
@@ -181,7 +191,7 @@ export default function CorporateServicesPage() {
   /**
    * Success state - show after successful submission
    */
-  if (mutation.isSuccess) {
+  if (mutation.isSuccess && showSuccessMessage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white py-16">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -209,7 +219,9 @@ export default function CorporateServicesPage() {
                     your specific needs and create a tailored wellness program for your organization.
                   </p>
                 </div>
-                <Button label="Submit Another Inquiry" variantStyle="outlineStyle" onClick={handleSubmitAnotherInquiry} />
+                <div className="mt-6 flex justify-center">
+                  <Button label="Submit Another Inquiry" variantStyle="outlineStyle" onClick={handleSubmitAnotherInquiry} />
+                </div>
               </CardContent>
             </Card>
           </motion.div>
@@ -239,6 +251,10 @@ export default function CorporateServicesPage() {
               Enhance employee health and productivity with on-site phlebotomy services. 
               Professional, convenient, and tailored to your organization's needs.
             </p>
+            <a href="#contact-form" className="inline-block mt-4 px-6 py-3 bg-white text-violet-700 font-semibold rounded-lg shadow-md hover:bg-violet-100 transition">
+              Get Started
+              <ArrowBigDown className="w-4 h-4 inline-block ml-2" />
+            </a>
           </motion.div>
         </div>
       </section>
@@ -285,7 +301,7 @@ export default function CorporateServicesPage() {
       </section>
 
       {/* Contact Form */}
-      <section className="py-16">
+      <section className="py-16" id="contact-form">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -361,12 +377,12 @@ export default function CorporateServicesPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="phone" className="label">Business Phone <span className="text-red-500">*</span></Label>
+                        <Label htmlFor="phoneNumber" className="label">Business Phone <span className="text-red-500">*</span></Label>
                         <Input
-                          id="phone"
+                          id="phoneNumber"
                           type="tel"
-                          value={formData.phone}
-                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          value={formData.phoneNumber}
+                          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
                           required
                           className="mt-1 input-field"
                           placeholder="+233 30 123 4567"
@@ -375,11 +391,11 @@ export default function CorporateServicesPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="companyAddress" className="label">Company Address</Label>
+                      <Label htmlFor="address" className="label">Company Address</Label>
                       <Textarea
-                        id="companyAddress"
-                        value={formData.companyAddress}
-                        onChange={(e) => handleInputChange('companyAddress', e.target.value)}
+                        id="address"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
                         placeholder="Complete business address where services would be provided"
                         className="mt-1 input-field"
                         rows={2}
@@ -458,11 +474,11 @@ export default function CorporateServicesPage() {
 
                   {/* Additional Notes */}
                   <div>
-                    <Label htmlFor="additionalNotes" className="label">Additional Requirements</Label>
+                    <Label htmlFor="additionalRequirements" className="label">Additional Requirements</Label>
                     <Textarea
-                      id="additionalNotes"
-                      value={formData.additionalNotes}
-                      onChange={(e) => handleInputChange('additionalNotes', e.target.value)}
+                      id="additionalRequirements"
+                      value={formData.additionalRequirements}
+                      onChange={(e) => handleInputChange('additionalRequirements', e.target.value)}
                       placeholder="Any specific requirements, questions, or additional information about your needs"
                       className="mt-1 input-field"
                       rows={4}

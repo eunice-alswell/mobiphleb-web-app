@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../mobiphleb-backend"
+		},
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../mobiphleb-frontend"
+		}
+	],
+	"settings": {}
+}
