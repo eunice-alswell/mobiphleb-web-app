@@ -10,7 +10,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Label } from "../components/ui/label";
 import { Alert, AlertDescription } from "../components/ui/alert";
-import Button from "../components/Button";
+import { Button } from "../components/ui/button";
+// import Button as BTN from "@/components/Button";
 import { 
   CreditCard, 
   Banknote, 
@@ -44,7 +45,7 @@ export default function Payment() {
   const appointmentId = location.state?.appointmentId;
   // const patientEmail = appointmentData?.patientEmail || appointmentData?.email || '';
 
-  const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>(null);
+  const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>("CASH");
 
   /**
    * Payment method options
@@ -62,20 +63,23 @@ export default function Payment() {
       name: 'Card Payment',
       description: 'Pay securely with debit/credit card via Paystack',
       icon: CreditCard,
-      available: true
+      available: false
     },
     {
       id: 'MOBILE_MONEY',
       name: 'Mobile Money',
       description: 'Pay via MTN Mobile Money or AirtelTigo Money',
       icon: Smartphone,
-      available: true
+      available: false
     }
   ];
 
   /**
    * React Query mutation for payment initialization
    */
+  const conversionRate = 100; // Paystack expects amount in the smallest currency unit
+  const BasePrice = 250 * conversionRate; //  Appointment Base is GHS 250.00
+
   const mutation = useMutation({
     mutationFn: async (paymentMode: PaymentMode) => {
       if (paymentMode === 'CASH') {
@@ -87,10 +91,9 @@ export default function Payment() {
       if (!appointmentId) {
         throw new Error('No appointment ID found');
       }
-
       const response = await initializePayment(appointmentId, {
         email: appointmentData?.patientEmail || appointmentData?.email || '',
-        amount: 5000, // Default amount in pesewas (GHS 50.00)
+        amount: BasePrice, // Default amount in pesewas (GHS 250.00)
         currency: 'GHS',
         paymentMode: paymentMode
       });
@@ -149,10 +152,13 @@ export default function Payment() {
               <p className="text-gray-600 mb-6">
                 Please complete the booking form first.
               </p>
-              <Button 
+              <Button onClick={() => navigate('/individual-booking')}>
+                Go to Booking
+              </Button>
+              {/* <Button 
                 label="Go to Booking" 
                 onClick={() => navigate('/individual-booking')} 
-              />
+              /> */}
             </CardContent>
           </Card>
         </div>
@@ -293,7 +299,7 @@ export default function Payment() {
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-700">Service Amount:</span>
-                  <span className="text-2xl font-bold text-gray-900">GHS 50.00</span>
+                  <span className="text-2xl font-bold text-gray-900">GHS {(BasePrice / conversionRate).toFixed(2)}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Final amount may vary based on selected services
@@ -302,13 +308,33 @@ export default function Payment() {
 
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button
+                {/* <Button
                   label="Back"
                   variantStyle="outlineStyle"
                   onClick={handleGoBack}
                   customStyle="flex-1"
-                />
-                <Button
+                /> */}
+                <Button 
+                  onClick={handleGoBack}
+                  className="text-primaryColor border border-primaryColor bg-transparent hover:bg-gradient-to-r hover:from-purple-500 hover:to-violet-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm px-5 py-2 text-center transition-colors duration-300 ease-in-out"
+                >
+                    Back
+                </Button>
+                <Button 
+                    onClick={handleProceed}
+                    disabled={!selectedPaymentMode || mutation.isPending} 
+                    type="button" 
+                    className=" flex-1 w-full py-3 text-white bg-gradient-to-r from-purple-500 to-violet-500 hover:bg-none hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center transition-colors duration-300 ease-in-out"
+                  >
+                    {
+                      mutation.isPending 
+                        ? "Processing..." 
+                        : selectedPaymentMode === 'CASH' 
+                          ? "Confirm Booking" 
+                          : "Proceed to Payment"
+                    }
+                  </Button>
+                {/* <Button
                   label={
                     mutation.isPending 
                       ? "Processing..." 
@@ -319,7 +345,7 @@ export default function Payment() {
                   onClick={handleProceed}
                   disable={!selectedPaymentMode || mutation.isPending}
                   customStyle="flex-1"
-                />
+                /> */}
               </div>
 
               {/* Terms notice */}
