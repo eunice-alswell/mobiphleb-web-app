@@ -48,16 +48,24 @@ export interface GuestAppointmentData {
   // Appointment details
   appointmentDate: string; // ISO 8601 date string
   appointmentTime: string; // e.g., "09:00 AM"
-  location: string;
+  address: string; // Full address string
+  userLocation?: { // GPS coordinates
+    latitude: number;
+    longitude: number;
+  };
   
   // Optional service details
-  facilityId?: string;
-  serviceId?: string;
+  facilityServiceId?: string; // Combined facility-service ID (deprecated - use facilityServiceIds)
+  facilityServiceIds?: string[]; // Array of facility-service IDs for multiple services
   patientNumber?: string;
+  distanceKm?: number;
+  basePrice?: number;
+  distanceCharge?: number;
+  totalPrice?: number;
   notes?: string;
   
   // File upload
-  labRequestFile?: File;
+  labRequestFiles?: File[];
 }
 
 /**

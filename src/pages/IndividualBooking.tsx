@@ -4,9 +4,9 @@
  * Supports guest users without authentication
  */
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -17,25 +17,23 @@ import {
   SelectItem, 
   SelectTrigger, 
   SelectValue } from "../components/ui/select";
-import { Alert, AlertDescription } from "../components/ui/alert";
 import GoogleMapsLocationPicker from "../components/GoogleMapsLocationPicker";
+import { DropdownCombobox } from "../components/DropdownCombobox";
 import { 
   CalendarDays, 
   Clock, 
   MapPin,
-  User, 
-  AlertCircle 
+  User
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "../components/ui/button";
 import { DatePickerInput } from "../components/DatePicker";
 import TimePicker from "../components/TimePicker";
 import { 
-  createGuestAppointment, 
-  getActivePartneredFacilities, 
-  getActivePartnerServices 
+  getActivePartneredFacilities,
+  getServicesByFacility
 } from "../lib/apiServices";
-import type { RelationshipType, Gender, PartnerFacility,Service } from "../types/api";
+import type { RelationshipType, Gender, PartnerFacility, FacilityService } from "../types/api";
 
 /**
  * Form data structure for the booking form
@@ -54,42 +52,97 @@ interface BookingFormData {
   // Appointment details
   appointmentDate: string;
   appointmentTime: string;
-  location: string;
+  address: string;
+  userLocation?: {
+    latitude: number;
+    longitude: number;
+  };
   
   // Lab information
   facilityId: string;
-  serviceType: string;
+  facilityServiceIds: string[]; // Array of facility service IDs
+  selectedServices: Array<{
+    id: string;
+    name: string;
+    price: number;
+  }>;
   patientNumber: string;
+  distanceKm?: number;
+  basePrice?: number;
+  distanceCharge?: number;
+  totalPrice?: number;
   
   // Additional
   notes: string;
   prescriptionFile: File | null;
   consent: boolean;
+
 }
 
 export default function IndividualBooking() {
   const navigate = useNavigate();
+  const location = useLocation();
   
-  // Form state
-  const [formData, setFormData] = useState<BookingFormData>({
-    relationshipToUser: "OTHER",
-    patientName: "",
-    patientEmail: "",
-    patientPhone: "",
-    patientAge: "",
-    patientGender: null,
-    appointmentDate: "",
-    appointmentTime: "",
-    location: "",
-    facilityId: "",
-    serviceType: "",
-    patientNumber: "",
-    notes: "",
-    prescriptionFile: null,
-    consent: false
+  // Form state - initialize from sessionStorage if available
+  const [formData, setFormData] = useState<BookingFormData>(() => {
+    const savedData = sessionStorage.getItem('individualBookingFormData');
+    if (savedData) {
+      try {
+        return JSON.parse(savedData);
+      } catch (e) {
+        console.error('Error parsing saved form data:', e);
+      }
+    }
+    return {
+      relationshipToUser: "OTHER",
+      patientName: "",
+      patientEmail: "",
+      patientPhone: "",
+      patientAge: "",
+      patientGender: null,
+      appointmentDate: "",
+      appointmentTime: "",
+      address: "",
+      userLocation: undefined,
+      facilityId: "",
+      facilityServiceIds: [],
+      selectedServices: [],
+      patientNumber: "",
+      distanceKm: undefined,
+      basePrice: 250.00,
+      distanceCharge: undefined,
+      totalPrice: undefined,
+      notes: "",
+      prescriptionFile: null,
+      consent: false
+    };
   });
 
   const [hasPatientNo, setHasPatientNo] = useState(false);
+  const [dateError, setDateError] = useState<string>('');
+  const [timeError, setTimeError] = useState<string>('');
+
+  // Save form data to sessionStorage whenever it changes
+  useEffect(() => {
+    sessionStorage.setItem('individualBookingFormData', JSON.stringify(formData));
+  }, [formData]);
+
+  // Clear sessionStorage when component unmounts (form submitted or navigated away permanently)
+  useEffect((): (() => void) | undefined => {
+    return () => {
+      // Only clear if we're not going to the select-location page
+      if (!location.pathname.includes('select-location')) {
+        // Use a small timeout to check if we're navigating to select-location
+        const timeoutId = setTimeout(() => {
+          const currentPath = window.location.pathname;
+          if (!currentPath.includes('select-location')) {
+            sessionStorage.removeItem('individualBookingFormData');
+          }
+        }, 100);
+        return () => clearTimeout(timeoutId);
+      }
+    };
+  }, [location.pathname]);
 
   // Fetch active partner facilites and their services for facility selection
   const {data:facilitiesData, isLoading:facilitiesLoading} = useQuery({
@@ -97,35 +150,80 @@ export default function IndividualBooking() {
     queryFn: getActivePartneredFacilities,
   });
 
-  const {data:servicesData, isLoading:servicesLoading} = useQuery({
-    queryKey: ['services'],
-    queryFn: getActivePartnerServices,
+  // Fetch services for the selected facility
+  const {data:facilityServicesData, isLoading:facilityServicesLoading} = useQuery({
+    queryKey: ['facility-services', formData.facilityId],
+    queryFn: () => getServicesByFacility(formData.facilityId),
+    enabled: !!formData.facilityId, // Only fetch when a facility is selected
   });
 
   const facilities = facilitiesData?.data || [];
-  const services = servicesData?.data || [];
+  
+  // Get facility-services instead of just filtering services
+  const facilityServices = useMemo(() => {
+    if (!formData.facilityId || !facilityServicesData?.data) {
+      return [];
+    }
+    return facilityServicesData.data;
+  }, [formData.facilityId, facilityServicesData]);
 
   /**
-   * On success, redirects to payment page
+   * Validate date - must be today or future
    */
-  const mutation = useMutation({
-    mutationFn: createGuestAppointment,
-    onSuccess: (data) => {
-      console.log('Appointment created successfully:', data);
+  const validateDate = (dateString: string) => {
+    if (!dateString) {
+      setDateError('');
+      return false;
+    }
+    
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day
+    
+    if (selectedDate < today) {
+      setDateError('Please select today or a future date');
+      return false;
+    }
+    
+    setDateError('');
+    return true;
+  };
+
+  /**
+   * Validate time - must be in the future if date is today
+   */
+  const validateTime = (timeString: string, dateString: string) => {
+    if (!timeString || !dateString) {
+      setTimeError('');
+      return false;
+    }
+    
+    const selectedDate = new Date(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Only validate time if date is today
+    if (selectedDate.getTime() === today.getTime()) {
+      const now = new Date();
+      const [time, period] = timeString.split(' ');
+      const [hours, minutes] = time.split(':').map(Number);
       
-      // Redirect to payment page with appointment data
-      navigate('/payment', {
-        state: {
-          appointmentId: data.data?.id,
-          appointmentData: formData,
-          email: formData.patientEmail 
-        }
-      });
-    },
-    onError: (error: Error) => {
-      console.error('Error creating appointment:', error);
-    },
-  });
+      let hour24 = hours;
+      if (period === 'PM' && hours !== 12) hour24 += 12;
+      if (period === 'AM' && hours === 12) hour24 = 0;
+      
+      const selectedDateTime = new Date();
+      selectedDateTime.setHours(hour24, minutes, 0, 0);
+      
+      if (selectedDateTime < now) {
+        setTimeError('Please select a future time');
+        return false;
+      }
+    }
+    
+    setTimeError('');
+    return true;
+  };
 
   /**
    * Handle input field changes
@@ -138,6 +236,69 @@ export default function IndividualBooking() {
       ...prev,
       [field]: value,
     }));
+    
+    // Validate date when it changes
+    if (field === 'appointmentDate') {
+      validateDate(value as string);
+      // Re-validate time if date changes
+      if (formData.appointmentTime) {
+        validateTime(formData.appointmentTime, value as string);
+      }
+    }
+    
+    // Validate time when it changes
+    if (field === 'appointmentTime') {
+      validateTime(value as string, formData.appointmentDate);
+    }
+  };
+
+  /**
+   * Handle facility selection change
+   * Clears service selection when facility changes
+   */
+  const handleFacilityChange = (facilityId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      facilityId: facilityId,
+      facilityServiceIds: [], // Clear facility service IDs
+      selectedServices: [], // Clear selected services
+    }));
+  };
+
+  /**
+   * Handle service selection change
+   * Toggles service in selectedServices array and updates facilityServiceIds
+   */
+  const handleServiceChange = (facilityServiceId: string) => {
+    const selectedFS = facilityServices.find(fs => fs.id === facilityServiceId);
+    if (!selectedFS) return;
+
+    setFormData((prev) => {
+      const isAlreadySelected = prev.selectedServices.some(s => s.id === facilityServiceId);
+      
+      if (isAlreadySelected) {
+        // Remove service
+        return {
+          ...prev,
+          selectedServices: prev.selectedServices.filter(s => s.id !== facilityServiceId),
+          facilityServiceIds: prev.facilityServiceIds.filter(id => id !== facilityServiceId),
+        };
+      } else {
+        // Add service
+        return {
+          ...prev,
+          selectedServices: [
+            ...prev.selectedServices,
+            {
+              id: facilityServiceId,
+              name: selectedFS.service.name,
+              price: selectedFS.price,
+            }
+          ],
+          facilityServiceIds: [...prev.facilityServiceIds, facilityServiceId],
+        };
+      }
+    });
   };
 
   /**
@@ -148,12 +309,14 @@ export default function IndividualBooking() {
     // Check basic required fields
     if (!formData.appointmentDate || 
         !formData.appointmentTime || 
-        !formData.location ||
+        !formData.address ||
         !formData.patientName || 
         !formData.patientEmail || 
         !formData.patientPhone || 
-        !formData.facilityId || 
-        !formData.consent) {
+        formData.selectedServices.length === 0 || 
+        !formData.consent ||
+        dateError !== '' ||
+        timeError !== '') {
       return false;
     }
     return true;
@@ -172,33 +335,22 @@ export default function IndividualBooking() {
 
   /**
    * Handle form submission
-   * Transforms form data to match backend API expectations
+   * Navigate to payment page with form data (don't create appointment yet)
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Transform form data to API format
-    const apiData = {
-      relationshipToUser: formData.relationshipToUser,
-      patientName: formData.patientName,
-      patientEmail: formData.patientEmail,
-      patientPhone: formData.patientPhone,
-      patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
-      patientGender: formData.patientGender || undefined,
-      appointmentDate: formData.appointmentDate,
-      appointmentTime: formData.appointmentTime,
-      location: formData.location,
-      facilityId: formData.facilityId || undefined,
-      serviceId: formData.serviceType || undefined,
-      patientNumber: formData.patientNumber || undefined,
-      notes: formData.notes || undefined,
-      labRequestFile: formData.prescriptionFile || undefined,
-    };
+    // Don't create appointment yet - just go to payment selection
+    // Appointment will be created after payment method selection
+    console.log('Navigating to payment page with form data');
 
-    console.log('Submitting appointment data:', apiData);
-
-    // Submit to API
-    mutation.mutate(apiData);
+    // Navigate to payment page with form data
+    navigate('/payment', {
+      state: {
+        formData: formData,
+        email: formData.patientEmail
+      }
+    });
   };
 
   // // Hardcoded facilities - should be fetched from API in production
@@ -259,20 +411,6 @@ export default function IndividualBooking() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              {/* Error alert */}
-              {mutation.isError && (
-                <Alert variant="destructive" className="mb-6">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    {mutation.error instanceof Error
-                      ? mutation.error.message
-                      : mutation.error
-                      ? String(mutation.error)
-                      : "Something went wrong. Please try again."}
-                  </AlertDescription>
-                </Alert>
-              )}
-
               <form onSubmit={handleSubmit} className="space-y-10">
                 {/* Who is this appointment for? */}
                 <div className="space-y-4">
@@ -284,7 +422,7 @@ export default function IndividualBooking() {
                   </h3>
                   
                   <div>
-                    <Label htmlFor="relationshipToUser" className="label">
+                    <Label className="label">
                       I am booking for <span className="text-red-500">*</span>
                     </Label>
                     <Select 
@@ -377,7 +515,7 @@ export default function IndividualBooking() {
                   </div>
 
                   <div>
-                    <Label htmlFor="patientGender" className="label">Gender</Label>
+                    <Label className="label">Gender</Label>
                     <Select 
                       value={formData.patientGender || ""} 
                       onValueChange={(value: Gender) => handleInputChange('patientGender', value)}
@@ -393,48 +531,7 @@ export default function IndividualBooking() {
                     </Select>
                   </div>
                 </div>
-
-                {/* Self booking basic info */}
-                {/* {formData.relationshipToUser === 'SELF' && (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      Your Information (Optional)
-                    </h3>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="patientAge" className="label">Age</Label>
-                        <Input
-                          id="patientAge"
-                          type="number"
-                          value={formData.patientAge}
-                          onChange={(e) => handleInputChange('patientAge', e.target.value)}
-                          className="mt-1 input-field"
-                          min="0"
-                          max="150"
-                          placeholder="Your age"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="patientGender" className="label">Gender</Label>
-                        <Select 
-                          value={formData.patientGender || ""} 
-                          onValueChange={(value: Gender) => handleInputChange('patientGender', value)}
-                        >
-                          <SelectTrigger className="mt-1 w-full input-field">
-                            <SelectValue placeholder="Select gender" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white text-gray-900 border-none">
-                            <SelectItem value="Male">Male</SelectItem>
-                            <SelectItem value="Female">Female</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                )} */}
-
+                
                 {/* Service Location */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -445,10 +542,16 @@ export default function IndividualBooking() {
                   </h3>
                   
                   <GoogleMapsLocationPicker
-                    onLocationSelect={(address) => {
-                      handleInputChange('location', address);
+                    onLocationSelect={(address, coordinates) => {
+                      handleInputChange('address', address);
+                      if (coordinates) {
+                        handleInputChange('userLocation', {
+                          latitude: coordinates.lat,
+                          longitude: coordinates.lng
+                        });
+                      }
                     }}
-                    initialValue={formData.location}
+                    initialValue={formData.address}
                     required={true}
                   />
                 </div>
@@ -464,17 +567,20 @@ export default function IndividualBooking() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="appointmentDate" className="label">
+                      <Label className="label">
                         Preferred Date <span className="text-red-500">*</span>
                       </Label>
                       <DatePickerInput 
                         value =  {formData.appointmentDate}
                         onChange={(date) => handleInputChange('appointmentDate', date ? date : "")}
                       />
+                      {dateError && (
+                        <p className="text-red-500 text-sm mt-1">{dateError}</p>
+                      )}
                     </div>
                     
                     <div>
-                      <Label htmlFor="appointmentTime" className="block text-sm font-medium text-gray-700 pt-2">
+                      <Label className="block text-sm font-medium text-gray-700 pt-2">
                         Preferred Time <span className="text-red-500">*</span>
                       </Label>
                       <TimePicker
@@ -485,6 +591,9 @@ export default function IndividualBooking() {
                         required
                         className="mt-1 w-full input-field"
                       />
+                      {timeError && (
+                        <p className="text-red-500 text-sm mt-1">{timeError}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -495,71 +604,100 @@ export default function IndividualBooking() {
                   
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="facilityId" className="label">
+                      <Label className="label">
                         Lab Facility <span className="text-red-500">*</span>
                       </Label>
-                      <Select 
-                        value={formData.facilityId} 
-                        onValueChange={(value) => handleInputChange('facilityId', value)}
+                      <DropdownCombobox
+                        items={facilities.map((facility: PartnerFacility) => ({
+                          id: facility.id,
+                          name: facility.facilityName,
+                        }))}
+                        value={formData.facilityId}
+                        onValueChange={(value) => handleFacilityChange(value)}
+                        placeholder={
+                          facilitiesLoading
+                            ? "Loading facilities..."
+                            : "Select a lab facility"
+                        }
+                        searchPlaceholder="Search facilities..."
+                        emptyText="No facilities available"
+                        className="mt-1 w-full input-field"
+                        disabled={facilitiesLoading}
                         required
-                      >
-                        <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue 
-                              placeholder={
-                              facilitiesLoading
-                                ? "Loading facilities..."
-                                : "Select a lab facility"
-                            } 
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border-none text-wrap ">
-                          {
-                            facilities.length === 0 && !facilitiesLoading ? (
-                              <SelectItem value="No-facilities" disabled>
-                                No facilities available
-                              </SelectItem>
-                            ) : (
-                              facilities.map((facility:PartnerFacility) => (
-                                <SelectItem key={facility.id} value={facility.id}>
-                                  {facility.facilityName}
-                                </SelectItem>
-                              ))
-                            )
-                          }
-                        </SelectContent>
-                      </Select>
+                      />
                     </div>
-                    <div>
-                      <Label htmlFor="serviceType" className="label">Service Type</Label>
-                      <Select 
-                        value={formData.serviceType || ""} 
-                        onValueChange={(value) => handleInputChange('serviceType', value)}
-                      >
-                        <SelectTrigger className="mt-1 input-field w-full">
-                          <SelectValue 
-                            placeholder= {
-                              servicesLoading
-                                ? "Loading service types..."
-                                : "Select service type" 
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white text-gray-900 border-none">
-                          {
-                            services.length === 0 && !servicesLoading ? (
-                              <SelectItem value="No-services" disabled>
-                                No services available
-                              </SelectItem>
-                            ) : (
-                              services.map((service:Service) => (
-                                <SelectItem key={service.id} value={service.id}>
-                                  {service.name}
-                                </SelectItem>
-                              ))
-                            )
-                          }
-                        </SelectContent>
-                      </Select>
+                    <div className="md:col-span-2">
+                      <Label className="label">
+                        Service Type(s) <span className="text-red-500">*</span>
+                      </Label>
+                      {!formData.facilityId ? (
+                        <div className="mt-1 p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                          Please select a facility first
+                        </div>
+                      ) : facilityServicesLoading ? (
+                        <div className="mt-1 p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                          Loading services...
+                        </div>
+                      ) : facilityServices.length === 0 ? (
+                        <div className="mt-1 p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 text-sm">
+                          No services available for this facility
+                        </div>
+                      ) : (
+                        <div className="mt-2 space-y-2 max-h-64 overflow-y-auto border border-gray-300 rounded-lg p-3">
+                          {facilityServices.map((fs: FacilityService) => {
+                            const isSelected = formData.selectedServices.some(s => s.id === fs.id);
+                            return (
+                              <label
+                                key={fs.id}
+                                className={`flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                  isSelected
+                                    ? 'border-primaryColor bg-violet-50'
+                                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={isSelected}
+                                    onChange={() => handleServiceChange(fs.id)}
+                                    className="w-4 h-4 text-primaryColor border-gray-300 rounded focus:ring-primaryColor"
+                                  />
+                                  <span className="text-sm font-medium text-gray-900">
+                                    {fs.service.name}
+                                  </span>
+                                </div>
+                                <span className="text-sm font-semibold text-primaryColor">
+                                  GHS {fs.price.toFixed(2)}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {formData.selectedServices.length > 0 && (
+                        <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <p className="text-sm font-medium text-blue-900 mb-2">
+                            Selected Services ({formData.selectedServices.length}):
+                          </p>
+                          <ul className="text-sm text-blue-800 space-y-1">
+                            {formData.selectedServices.map((service) => (
+                              <li key={service.id} className="flex justify-between">
+                                <span>{service.name}</span>
+                                <span className="font-medium">GHS {service.price.toFixed(2)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="mt-2 pt-2 border-t border-blue-300 flex justify-between">
+                            <span className="font-semibold text-blue-900">Subtotal:</span>
+                            <span className="font-semibold text-blue-900">
+                              GHS {formData.selectedServices.reduce((sum, s) => sum + s.price, 0).toFixed(2)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-blue-700 mt-2">
+                            Note: The facility will contact you on how to pay for the selected services and inform you of additional charges if any.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -666,18 +804,12 @@ export default function IndividualBooking() {
                                 
                 {/* Submit Button */}
                 <div className="">
-                  {/* <Button 
-                    disable={mutation.isPending || !isFormValid()} 
-                    type="submit" 
-                    label={mutation.isPending ? "Processing..." : "Continue to Payment"} 
-                    customStyle="w-full py-3 text-lg"
-                  /> */}
                   <Button 
-                    disabled={mutation.isPending || !isFormValid()} 
+                    disabled={!isFormValid()} 
                     type="submit" 
                     className="w-full py-3 text-white bg-gradient-to-r from-purple-500 to-violet-500 hover:bg-none hover:border-2 hover:border-primaryColor hover:text-primaryColor focus:ring-4 focus:outline-none focus:ring-primaryColor font-medium rounded-4xl text-sm text-center transition-colors duration-300 ease-in-out"
                   >
-                    {mutation.isPending ? "Processing..." : "Continue to Payment"}
+                    Continue to Payment
                   </Button>
                 </div>
               </form>

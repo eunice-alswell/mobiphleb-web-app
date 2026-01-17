@@ -22,7 +22,7 @@ import {
   Shield
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { initializePayment } from "../lib/apiServices";
+import { initializePayment, createGuestAppointment } from "../lib/apiServices";
 import type { PaymentMode } from "../types/api";
 
 /**
@@ -40,9 +40,8 @@ export default function Payment() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get appointment data from navigation state
-  const appointmentData = location.state?.appointmentData;
-  const appointmentId = location.state?.appointmentId;
+  // Get form data from navigation state (sent from booking form)
+  const formData = location.state?.formData;
   // const patientEmail = appointmentData?.patientEmail || appointmentData?.email || '';
 
   const [selectedPaymentMode, setSelectedPaymentMode] = useState<PaymentMode | null>("CASH");
@@ -75,28 +74,91 @@ export default function Payment() {
   ];
 
   /**
-   * React Query mutation for payment initialization
+   * Calculate pricing from form data
    */
+  const selectedServices = formData?.selectedServices || [];
+  // const servicesTotal = selectedServices.reduce((sum: number, service: { price: number }) => sum + service.price, 0);
+  const basePrice = formData?.basePrice || 250.00; // Default base price if not provided
+  const distanceCharge = formData?.distanceCharge || 0; // Default distance charge if not provided
+  const totalAmount = basePrice + distanceCharge;// + servicesTotal;
   const conversionRate = 100; // Paystack expects amount in the smallest currency unit
-  const BasePrice = 250 * conversionRate; //  Appointment Base is GHS 250.00
+  const amountInPesewas = Math.round(totalAmount * conversionRate);
 
   const mutation = useMutation({
     mutationFn: async (paymentMode: PaymentMode) => {
       if (paymentMode === 'CASH') {
-        // For cash payment, proceed directly to booking
-        return { paymentMode: 'CASH', proceedDirectly: true };
+        // For cash payment, create appointment now
+        const apiData = {
+          relationshipToUser: formData.relationshipToUser,
+          patientName: formData.patientName,
+          patientEmail: formData.patientEmail,
+          patientPhone: formData.patientPhone,
+          patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
+          patientGender: formData.patientGender || undefined,
+          appointmentDate: formData.appointmentDate,
+          appointmentTime: formData.appointmentTime,
+          address: formData.address,
+          userLocation: formData.userLocation,
+          facilityServiceIds: formData.facilityServiceIds || [],
+          patientNumber: formData.patientNumber || undefined,
+          notes: formData.notes || undefined,
+          labRequestFile: formData.prescriptionFile || undefined,
+          // Include calculated pricing
+          basePrice: basePrice,
+          distanceCharge: distanceCharge,
+          totalPrice: totalAmount,
+        };
+        
+        const appointmentResponse = await createGuestAppointment(apiData);
+        
+        // Clear saved form data after successful creation
+        sessionStorage.removeItem('individualBookingFormData');
+        
+        return { 
+          paymentMode: 'CASH', 
+          proceedDirectly: true,
+          appointmentData: appointmentResponse.data 
+        };
       }
       
-      // For online payments (CARD/MOBILE_MONEY), initialize payment
-      if (!appointmentId) {
-        throw new Error('No appointment ID found');
+      // For online payments (CARD/MOBILE_MONEY), create appointment first, then initialize payment
+      const apiData = {
+        relationshipToUser: formData.relationshipToUser,
+        patientName: formData.patientName,
+        patientEmail: formData.patientEmail,
+        patientPhone: formData.patientPhone,
+        patientAge: formData.patientAge ? parseInt(formData.patientAge) : undefined,
+        patientGender: formData.patientGender || undefined,
+        appointmentDate: formData.appointmentDate,
+        appointmentTime: formData.appointmentTime,
+        address: formData.address,
+        userLocation: formData.userLocation,
+        facilityServiceIds: formData.facilityServiceIds || [],
+        patientNumber: formData.patientNumber || undefined,
+        notes: formData.notes || undefined,
+        labRequestFile: formData.prescriptionFile || undefined,
+        // Include calculated pricing
+        basePrice: basePrice,
+        distanceCharge: distanceCharge,
+        totalPrice: totalAmount,
+      };
+      
+      const appointmentResponse = await createGuestAppointment(apiData);
+      const createdAppointmentId = appointmentResponse.data?.id;
+      
+      if (!createdAppointmentId) {
+        throw new Error('Failed to create appointment');
       }
-      const response = await initializePayment(appointmentId, {
-        email: appointmentData?.patientEmail || appointmentData?.email || '',
-        amount: BasePrice, // Default amount in pesewas (GHS 250.00)
+      
+      const response = await initializePayment(createdAppointmentId, {
+        email: formData?.patientEmail || formData?.email || '',
+        amount: amountInPesewas, // Total amount in pesewas
         currency: 'GHS',
         paymentMode: paymentMode
       });
+
+      // Clear saved form data after successful creation
+      sessionStorage.removeItem('individualBookingFormData');
 
       return { ...response, proceedDirectly: false };
     },
@@ -105,7 +167,7 @@ export default function Payment() {
         // Cash payment - proceed to success page
         navigate('/booking-success', {
           state: { 
-            appointmentData,
+            appointmentData: data.appointmentData,
             paymentMode: 'CASH',
             message: 'Your appointment has been booked. Please prepare cash payment for the phlebotomist.'
           }
@@ -138,8 +200,8 @@ export default function Payment() {
     navigate(-1);
   };
 
-  // Redirect if no appointment data
-  if (!appointmentData && !appointmentId) {
+  // Redirect if no form data
+  if (!formData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-violet-50 to-white flex items-center justify-center py-16">
         <div className="max-w-md mx-auto px-4">
@@ -193,6 +255,51 @@ export default function Payment() {
             </p>
           </div>
 
+          {/* Amount display */}
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <h2 className="text-gray-700 font-semibold mb-3">PAYMENT SUMMARY</h2>
+            <hr className="my-2 border-gray-300" />
+            
+            {/* Selected Services */}
+            {/* {selectedServices.length > 0 && (
+              <div className="mb-3">
+                <p className="text-sm font-medium text-gray-600 mb-2">Selected Services:</p>
+                {selectedServices.map((service: { id: string; name: string; price: number }, index: number) => (
+                  <div key={index} className="flex justify-between items-center text-sm text-gray-700 mb-1 pl-2">
+                    <span>• {service.name}</span>
+                    <span className="font-medium">GHS {service.price.toFixed(2)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between items-center text-sm text-gray-700 mt-2 pt-2 border-t border-gray-300">
+                  <span className="font-medium">Services Subtotal:</span>
+                  <span className="font-semibold">GHS {servicesTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            )} */}
+            <div className="flex justify-between items-center text-sm text-left text-gray-700 mb-1 pl-2">
+              <span className="">Base charge:</span>
+              <span className="font-medium">GHS {basePrice.toFixed(2)}</span>
+            </div>
+            {/* Distance Charge */}
+            <div className="flex justify-between items-center text-sm text-gray-700 mb-2">
+              <span className="">Distance Charge:</span>
+              <span className="font-medium">GHS {distanceCharge.toFixed(2)}</span>
+            </div>
+            
+            <hr className="my-3 border-gray-300" />
+            
+            {/* Total */}
+            <div className="flex justify-between items-center">
+              <span className="text-base font-bold text-gray-900">Total Amount:</span>
+              <span className="text-lg font-bold text-primaryColor">GHS {totalAmount.toFixed(2)}</span>
+            </div>
+            
+            <p className="text-xs text-gray-500 mt-3">
+              {selectedServices.length === 0 && 'No services selected. '}
+              All prices are in Ghana Cedis (GHS). Please note that the distance charge may vary based on your location.
+            </p>
+          </div>
+
           <Card className="shadow-lg border-0">
             <CardHeader className="h-16 flex items-center bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-t-lg">
               <CardTitle className="text-xl flex items-center gap-2">
@@ -201,8 +308,8 @@ export default function Payment() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              {/* Error alert */}
-              {mutation.isError && (
+              {/* Error alert - only show for online payment failures */}
+              {mutation.isError && selectedPaymentMode !== 'CASH' && (
                 <Alert variant="destructive" className="mb-6">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
@@ -295,16 +402,7 @@ export default function Payment() {
                 </motion.div>
               )}
 
-              {/* Amount display */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-700">Service Amount:</span>
-                  <span className="text-2xl font-bold text-gray-900">GHS {(BasePrice / conversionRate).toFixed(2)}</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Final amount may vary based on selected services
-                </p>
-              </div>
+              
 
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-3">

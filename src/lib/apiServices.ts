@@ -12,7 +12,8 @@ import type {
   InitializePaymentData,
   InitializePaymentResponse,
   VerifyPaymentData,
-  VerifyPaymentResponse
+  VerifyPaymentResponse,
+  FacilityService
 } from '../types/api';
 
 /**
@@ -52,15 +53,26 @@ export const createGuestAppointment = async (
   // Appointment details
   formData.append('appointmentDate', appointmentData.appointmentDate);
   formData.append('appointmentTime', appointmentData.appointmentTime);
-  formData.append('location', appointmentData.location);
+  formData.append('address', appointmentData.address);
+  
+  // Location coordinates
+  if (appointmentData.userLocation) {
+    formData.append('userLocation[latitude]', appointmentData.userLocation.latitude.toString());
+    formData.append('userLocation[longitude]', appointmentData.userLocation.longitude.toString());
+  }
   
   // Optional fields
-  if (appointmentData.facilityId) {
-    formData.append('facilityId', appointmentData.facilityId);
+  if (appointmentData.facilityServiceId) {
+    formData.append('facilityServiceId', appointmentData.facilityServiceId);
   }
-  if (appointmentData.serviceId) {
-    formData.append('serviceId', appointmentData.serviceId);
+  
+  // Multiple services support
+  if (appointmentData.facilityServiceIds && appointmentData.facilityServiceIds.length > 0) {
+    appointmentData.facilityServiceIds.forEach((id) => {
+      formData.append('facilityServiceIds[]', id);
+    });
   }
+  
   if (appointmentData.patientNumber) {
     formData.append('patientNumber', appointmentData.patientNumber);
   }
@@ -69,8 +81,21 @@ export const createGuestAppointment = async (
   }
   
   // Append file if provided
-  if (appointmentData.labRequestFile) {
-    formData.append('labRequestFile', appointmentData.labRequestFile);
+  if (appointmentData.labRequestFiles) {
+    formData.append('labRequestFiles', appointmentData.labRequestFiles[0]);
+  }
+
+  if (appointmentData.distanceKm !== undefined) {
+    formData.append('distanceKm', appointmentData.distanceKm.toString());
+  }
+  if (appointmentData.basePrice !== undefined) {
+    formData.append('basePrice', appointmentData.basePrice.toString());
+  }
+  if (appointmentData.distanceCharge !== undefined) {
+    formData.append('distanceCharge', appointmentData.distanceCharge.toString());
+  }
+  if (appointmentData.totalPrice !== undefined) {
+    formData.append('totalPrice', appointmentData.totalPrice.toString());
   }
   
   const response = await apiClient.post<AppointmentResponse>(
@@ -167,6 +192,25 @@ export const verifyPayment = async (
   const response = await apiClient.post<VerifyPaymentResponse>(
     '/payments/verify',
     verifyData
+  );
+  
+  return response.data;
+};
+
+/**
+ * Get all services offered by a specific facility
+ * GET /partner-services/facility/:facilityId/services
+ * 
+ * @param facilityId - ID of the facility
+ * @param activeOnly - Filter only active services (default: true)
+ * @returns Promise with list of services offered by the facility
+ */
+export const getServicesByFacility = async (
+  facilityId: string,
+  activeOnly: boolean = true
+): Promise<{ success: boolean; message: string; data: FacilityService[] }> => {
+  const response = await apiClient.get(
+    `/partner-services/facility/${facilityId}/services?activeOnly=${activeOnly}`
   );
   
   return response.data;

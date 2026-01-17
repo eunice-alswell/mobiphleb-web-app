@@ -10,6 +10,7 @@ const BookingSuccess = lazy(() => import('./BookingSuccess'));
 const Contact = lazy(() => import('./Contact'));
 const NotFound = lazy(() => import('./NotFound'));
 const Terms = lazy(() => import('./Terms'));
+const SelectLocation = lazy(() => import('./SelectLocation'));
 
 
 const Pages = {
@@ -22,6 +23,7 @@ const Pages = {
     Contact,
     NotFound,
     Terms,
+    SelectLocation,
 }
 
 export default Pages;

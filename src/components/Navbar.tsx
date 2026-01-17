@@ -84,8 +84,8 @@ export default function Navbar() {
             {/* Mobile Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
-                <div className="cursor-pointer bg-accent p-2 rounded-md">
-                  <Menu className="w-6 h-6 md:hidden text-violet-900" />
+                <div className="cursor-pointer md:hidden lg:hidden bg-accent p-2 rounded-md">
+                  <Menu className="w-6 h-6 md:hidden  text-violet-900" />
                 </div>
               </SheetTrigger>
               {/* Sidebar (from right, full height) */}
